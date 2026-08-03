@@ -1,0 +1,46 @@
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.eggs/
+
+# Jupyter / Colab
+.ipynb_checkpoints/
+*.ipynb_meta
+
+# Virtual environments
+venv/
+env/
+.venv/
+.env
+
+# ML artifacts (kept on Drive, not GitHub)
+checkpoints/
+*.pt
+*.pth
+*.h5
+*.ckpt
+*.onnx
+runs/
+logs/
+wandb/
+outputs/
+
+# Data (kept on Drive, not GitHub)
+data/
+*.csv
+*.zip
+*.tar.gz
+
+# OS / editor junk
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+
+# Environment / secrets
+*.env
+.env.local
+config/secrets.yaml
