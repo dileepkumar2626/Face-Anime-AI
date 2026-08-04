@@ -29,7 +29,7 @@ wandb/
 outputs/
 
 # Data (kept on Drive, not GitHub)
-data/
+/data/raw/
 *.csv
 *.zip
 *.tar.gz
