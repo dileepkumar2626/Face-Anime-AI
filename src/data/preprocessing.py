@@ -5,10 +5,11 @@ from collections import Counter
 from sklearn.model_selection import train_test_split
 import hashlib
 import json
-anime_data_path = Path("C:/Users/HP/Desktop/Face-Anime-AI/data/raw_data/anime/")
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
+anime_data_path = PROJECT_ROOT / "data" / "raw_data" / "anime"
+real_data_path = PROJECT_ROOT / "data" / "raw_data" / "real"
 print("Anime Dataset Exists:", anime_data_path.exists())
 print("Contents (first 10):", list(anime_data_path.iterdir())[:10])
-real_data_path = Path("C:/Users/HP/Desktop/Face-Anime-AI/data/raw_data/real/")
 print("Real dataset Exists:", real_data_path.exists())
 print("Contents (first 10):", list(real_data_path.iterdir())[:10])
 
@@ -85,13 +86,13 @@ valid_anime_images,corrupt_anime_files,size_counts=get_corrupt_images(anime_imag
 print(type(valid_anime_images))
 deduplicated_anime_images=remove_duplicate_images(valid_anime_images)
 anime_train,anime_test=dataset_split(deduplicated_anime_images)
-save_dataset(anime_train,"C:/Users/HP/Desktop/Face-Anime-AI/data/processed/anime_train/anime_train.json")
-save_dataset(anime_test,'C:/Users/HP/Desktop/Face-Anime-AI/data/processed/anime_test/anime_test.json')
+save_dataset(anime_train,PROJECT_ROOT / "data" / "processed"/"anime_train"/"anime_train.json")
+save_dataset(anime_test,PROJECT_ROOT / "data" / "processed"/"anime_test"/"anime_test.json")
 
 real_images=get_image_path(real_data_path)
 valid_real_images,corrupt_real_files,size_counts=get_corrupt_images(real_images)
 print(type(valid_real_images))
 deduplicated_real_images=remove_duplicate_images(valid_real_images)
 real_train,real_test=dataset_split(deduplicated_real_images)
-save_dataset(real_train,"C:/Users/HP/Desktop/Face-Anime-AI/data/processed/real_train/real_train.json")
-save_dataset(real_test,'C:/Users/HP/Desktop/Face-Anime-AI/data/processed/real_test/real_test.json')
+save_dataset(real_train,PROJECT_ROOT / "data" / "processed"/"real_train"/"real_train.json")
+save_dataset(real_test,PROJECT_ROOT / "data" / "processed"/"real_test"/"real_test.json")
