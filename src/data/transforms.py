@@ -11,7 +11,7 @@ def transform_train_data(image_size):
     return train_transform
 def transform_test_data(image_size):
     test_transform = transforms.Compose([
-    transforms.Resize(int(image_size * 1.12), Image.BICUBIC),                                                 # faces are ~symmetric
+    transforms.Resize((image_size, image_size), Image.BICUBIC),                                                 # faces are ~symmetric
     transforms.ToTensor(),
     transforms.Normalize((0.5, 0.5, 0.5), (0.5, 0.5, 0.5))
     ])
