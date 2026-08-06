@@ -3,7 +3,10 @@ from torch.utils.data import Dataset
 import json
 import random
 from pathlib import Path
-from transforms import transform_train_data,transform_test_data
+import sys
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.append(str(PROJECT_ROOT))
+from data.transforms import transform_train_data,transform_test_data
 class CycleGANDataset(Dataset):
     def __init__(self, face_json_paths, anime_json_paths, transform=None):
         self.transform = transform
