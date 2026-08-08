@@ -1,9 +1,13 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from generator import ResnetGenerator
-from discriminator import PatchDiscriminator
-from losses import CycleGANLosses
+from pathlib import Path
+import sys
+PROJECT_ROOT = Path(__file__).resolve().parents[1]
+sys.path.append(str(PROJECT_ROOT))
+from models.generator import ResnetGenerator
+from models.discriminator import PatchDiscriminator
+from models.losses import CycleGANLosses
 class CycleGAN(nn.Module):
     def __init__(
         self,

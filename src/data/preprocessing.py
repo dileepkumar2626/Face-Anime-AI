@@ -23,16 +23,18 @@ def get_corrupt_images(images):
     sizes = []              
     valid_images = []     
     corrupt_files = []
-
     for img_path in images:
-        try:
-            with Image.open(img_path) as img:
-                img.verify()
-            with Image.open(img_path) as img:
-                sizes.append(img.size)   
-            valid_images.append(img_path) 
-        except (UnidentifiedImageError, OSError, Exception) as e:
-            corrupt_files.append((img_path, str(e)))
+        if len(valid_images)>2000:
+            break
+        else:
+            try:
+                with Image.open(img_path) as img:
+                    img.verify()
+                with Image.open(img_path) as img:
+                    sizes.append(img.size)   
+                valid_images.append(img_path) 
+            except (UnidentifiedImageError, OSError, Exception) as e:
+                corrupt_files.append((img_path, str(e)))
 
     print(f"Valid images: {len(valid_images)}")
     print(f"Corrupt/unreadable images: {len(corrupt_files)}")
