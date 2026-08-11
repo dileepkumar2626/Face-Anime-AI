@@ -3,6 +3,7 @@ import torch
 from torchvision import transforms
 from PIL import Image
 from models.generator import ResnetGenerator
+
 IMAGE_SIZE = 256
 test_transform = transforms.Compose([
     transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
