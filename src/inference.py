@@ -47,5 +47,6 @@ def main():
     generator = load_generator(args.checkpoint, device)
     fake_anime = run_inference(generator, args.input, device)
     save_image(fake_anime, args.output)
+    
 if __name__ == "__main__":
     main()
