@@ -4,9 +4,9 @@ import json
 import random
 from pathlib import Path
 import sys
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.append(str(PROJECT_ROOT))
-from data.transforms import transform_train_data,transform_test_data
+from src.data.transforms import transform_train_data,transform_test_data
 class CycleGANDataset(Dataset):
     def __init__(self, face_json_paths, anime_json_paths, transform=None):
         self.transform = transform
@@ -33,7 +33,6 @@ class CycleGANDataset(Dataset):
             real_img = self.transform(real_img)
             anime_img = self.transform(anime_img)
         return real_img, anime_img
-PROJECT_ROOT = Path(__file__).resolve().parents[2]
 train_transform=transform_train_data(256)
 train_dataset=CycleGANDataset(face_json_paths=[
         PROJECT_ROOT / "data" / "processed" / "real_train" / "real_train.json"],

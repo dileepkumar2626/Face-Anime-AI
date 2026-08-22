@@ -1,11 +1,12 @@
-import os
+import sys
 from pathlib import Path
 from PIL import Image,UnidentifiedImageError
-from collections import Counter
+from collections import Counter,defaultdict
 from sklearn.model_selection import train_test_split
 import hashlib
 import json
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
+sys.path.insert(0, str(PROJECT_ROOT))
 anime_data_path = PROJECT_ROOT / "data" / "raw_data" / "anime"
 real_data_path = PROJECT_ROOT / "data" / "raw_data" / "real"
 print("Anime Dataset Exists:", anime_data_path.exists())
@@ -23,6 +24,7 @@ def get_corrupt_images(images):
     sizes = []              
     valid_images = []     
     corrupt_files = []
+    images=images[:500]
     for img_path in images:
         try:
             with Image.open(img_path) as img:
@@ -49,19 +51,10 @@ def get_corrupt_images(images):
 def dataset_split(valid_images):
     train,test=train_test_split(valid_images,test_size=0.2,random_state=42)
     return train,test
-import hashlib
-from collections import defaultdict
-
 def file_hash(path):
     with open(path, "rb") as f:
         return hashlib.md5(f.read()).hexdigest()
-
 def remove_duplicate_images(image_paths):
-    """
-    Takes a list of image file paths, groups them by content hash,
-    keeps one file per duplicate group, and returns the deduplicated list.
-    Does NOT delete anything from disk.
-    """
     hash_groups = defaultdict(list)
     for img_path in image_paths:
         h = file_hash(img_path)
@@ -87,7 +80,6 @@ deduplicated_anime_images=remove_duplicate_images(valid_anime_images)
 anime_train,anime_test=dataset_split(deduplicated_anime_images)
 save_dataset(anime_train,PROJECT_ROOT / "data" / "processed"/"anime_train"/"anime_train.json")
 save_dataset(anime_test,PROJECT_ROOT / "data" / "processed"/"anime_test"/"anime_test.json")
-
 real_images=get_image_path(real_data_path)
 valid_real_images,corrupt_real_files,size_counts=get_corrupt_images(real_images)
 print(type(valid_real_images))
