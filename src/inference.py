@@ -1,38 +1,34 @@
 import argparse
+import sys
 import torch
 from torchvision import transforms
 from PIL import Image
+from pathlib import Path
 from models.generator import ResnetGenerator
-
+PROJECT_ROOT=Path(__file__).resolve().parents[1]
+sys.path.insert(0, str(PROJECT_ROOT))
+from src.data.transforms import transform_test_data
 IMAGE_SIZE = 256
-test_transform = transforms.Compose([
-    transforms.Resize((IMAGE_SIZE, IMAGE_SIZE)),
-    transforms.ToTensor(),
-    transforms.Normalize(mean=[0.5, 0.5, 0.5], std=[0.5, 0.5, 0.5]),
-])
+test_transform = transform_test_data(IMAGE_SIZE)
 denormalize = transforms.Normalize(
     mean=[-1.0, -1.0, -1.0],
     std=[2.0, 2.0, 2.0],
 )
 def load_generator(checkpoint_path, device):
-    """Load only G_face2anime from a full CycleGAN checkpoint."""
     generator = ResnetGenerator(input_nc=3, output_nc=3, n_residual_blocks=9).to(device)
  
     checkpoint = torch.load(checkpoint_path, map_location=device)
     state_dict = checkpoint["G_face2anime"] if "G_face2anime" in checkpoint else checkpoint
     generator.load_state_dict(state_dict)
- 
     generator.eval()  
     return generator
 def run_inference(generator, image_path, device):
-    """Load one image, apply test transforms, generate the anime version."""
     image = Image.open(image_path).convert("RGB")
     input_tensor = test_transform(image).unsqueeze(0).to(device)  
     with torch.no_grad():
         fake_anime = generator(input_tensor)
     return fake_anime.squeeze(0).cpu() 
 def save_image(tensor, output_path):
-    """Denormalize a [-1, 1] tensor back to [0, 1] and save as an image file."""
     tensor = denormalize(tensor).clamp(0, 1)
     image = transforms.ToPILImage()(tensor)
     image.save(output_path)

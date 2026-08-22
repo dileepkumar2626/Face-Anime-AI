@@ -3,7 +3,7 @@ import torch
 def save_checkpoint(model, epoch, checkpoint_dir):
     checkpoint_dir = Path(checkpoint_dir)
     checkpoint_dir.mkdir(parents=True, exist_ok=True)
-    path = checkpoint_dir / f"cyclegan_epoch_{epoch}.pth"
+    path = checkpoint_dir / f"best_model.pth"
     torch.save(
         {
             "epoch": epoch,

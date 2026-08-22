@@ -3,10 +3,10 @@ from pathlib import Path
 import torch
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 sys.path.append(str(PROJECT_ROOT))
-from models.cyclegan import CycleGAN
-from data.dataloader import train_data_loader
-from utils.checkpoint import save_checkpoint
-def train(num_epochs=5,batch_size=2,lr=2e-4,lambda_cycle=10.0,lambda_identity=0.5,checkpoint_dir="checkpoints",log_every=50,device=None):
+from src.models.cyclegan import CycleGAN
+from src.data.dataloader import train_data_loader
+from src.utils.checkpoint import save_checkpoint
+def train(num_epochs=5,lr=2e-4,lambda_cycle=10.0,lambda_identity=0.5,checkpoint_dir="checkpoints",log_every=50,device=None):
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     if torch.cuda.is_available():
@@ -55,4 +55,4 @@ def train(num_epochs=5,batch_size=2,lr=2e-4,lambda_cycle=10.0,lambda_identity=0.
             print(f"Best loss: {best_loss:.4f}")
     return model
 if __name__ == "__main__":
-    train(num_epochs=5,batch_size=2)
+    train(num_epochs=5)
