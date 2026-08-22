@@ -11,12 +11,6 @@ train_data_loader = DataLoader(
     num_workers=0,
     pin_memory=True
 )
-for real, anime in train_data_loader:
-    print(real.shape)
-    print(anime.shape)
-    print(real.dtype)
-    print(anime.dtype)
-    break
 test_data_loader = DataLoader(
     test_dataset,
     batch_size=2,
@@ -24,9 +18,16 @@ test_data_loader = DataLoader(
     num_workers=0,
     pin_memory=True
 )
-for real, anime in test_data_loader:
-    print(real.shape)
-    print(anime.shape)
-    print(real.dtype)
-    print(anime.dtype)
-    break
+if __name__=='__main__':
+    for real, anime in train_data_loader:
+        print(real.shape)
+        print(anime.shape)
+        print(real.dtype)
+        print(anime.dtype)
+        break
+    for real, anime in test_data_loader:
+        print(real.shape)
+        print(anime.shape)
+        print(real.dtype)
+        print(anime.dtype)
+        break

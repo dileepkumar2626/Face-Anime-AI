@@ -52,11 +52,6 @@ class CycleGANLosses:
             "total": total.item(),
         }
     def compute_discriminator_loss(self, D, real, fake):
-        """
-        Standard LSGAN discriminator loss: real images should score close to 1,
-        fake (detached, so no generator gradients flow here) should score close to 0.
-        Call once per discriminator (D_face, D_anime), each with its own real/fake pair.
-        """
         loss_real = self.gan_loss(D(real), target_is_real=True)
         loss_fake = self.gan_loss(D(fake.detach()), target_is_real=False)
         return (loss_real + loss_fake) * 0.5

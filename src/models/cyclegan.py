@@ -3,11 +3,11 @@ import torch.nn as nn
 import torch.optim as optim
 from pathlib import Path
 import sys
-PROJECT_ROOT = Path(__file__).resolve().parents[1]
+PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.append(str(PROJECT_ROOT))
-from models.generator import ResnetGenerator
-from models.discriminator import PatchDiscriminator
-from models.losses import CycleGANLosses
+from src.models.generator import ResnetGenerator
+from src.models.discriminator import PatchDiscriminator
+from src.models.losses import CycleGANLosses
 class CycleGAN(nn.Module):
     def __init__(
         self,
@@ -99,22 +99,12 @@ class CycleGAN(nn.Module):
             "D_anime": d_anime_loss.item(),
         }
 if __name__ == "__main__":
-    import sys
-    from pathlib import Path
-
-    PROJECT_ROOT = Path(__file__).resolve().parents[1]
-    sys.path.append(str(PROJECT_ROOT))
-    from data.dataset import train_dataset
-    from torch.utils.data import DataLoader
+    from src.data.dataset import train_dataset
+    from src.data.dataloader import train_data_loader
     device = "cuda" if torch.cuda.is_available() else "cpu"
-    train_loader = DataLoader(
-        train_dataset,
-        batch_size=1,
-        shuffle=True,
-    )
+    train_loader = train_data_loader
     model = CycleGAN(device=device)
     real_face, real_anime = next(iter(train_loader))
-
     print("=" * 50)
     print("Input Shapes")
     print("=" * 50)
