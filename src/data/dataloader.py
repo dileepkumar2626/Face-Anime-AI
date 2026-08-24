@@ -6,14 +6,14 @@ from src.data.dataset import train_dataset,test_dataset
 from torch.utils.data import DataLoader
 train_data_loader = DataLoader(
     train_dataset,
-    batch_size=1,
+    batch_size=2,
     shuffle=True,
     num_workers=0,
     pin_memory=True
 )
 test_data_loader = DataLoader(
     test_dataset,
-    batch_size=1,
+    batch_size=2,
     shuffle=False,
     num_workers=0,
     pin_memory=True
