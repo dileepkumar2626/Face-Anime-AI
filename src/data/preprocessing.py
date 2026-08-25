@@ -24,7 +24,7 @@ def get_corrupt_images(images):
     sizes = []              
     valid_images = []     
     corrupt_files = []
-    images=images[:60000]
+    images=images[:1000]
     for img_path in images:
         try:
             with Image.open(img_path) as img:

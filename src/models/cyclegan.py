@@ -1,6 +1,7 @@
 import torch
 import torch.nn as nn
 import torch.optim as optim
+from torch.optim import lr_scheduler
 from pathlib import Path
 import sys
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
@@ -17,6 +18,8 @@ class CycleGAN(nn.Module):
         lambda_cycle=10.0,
         lambda_identity=0.5,
         device="cuda",
+        n_epochs=20,
+        decay_epoch=40
     ):
         super().__init__()
         self.device = device
@@ -53,6 +56,25 @@ class CycleGAN(nn.Module):
             lr=lr,
             betas=(beta1, beta2),
         )
+        self.n_epochs = n_epochs
+        self.decay_epoch = decay_epoch
+        def lambda_rule(epoch):
+            if epoch < decay_epoch:
+                return 1.0
+            decay_progress = (epoch - decay_epoch) / max(1, (n_epochs - decay_epoch))
+            return max(0.0, 1.0 - decay_progress)
+ 
+        self.scheduler_G = lr_scheduler.LambdaLR(self.optimizer_G, lr_lambda=lambda_rule)
+        self.scheduler_D_face = lr_scheduler.LambdaLR(self.optimizer_D_face, lr_lambda=lambda_rule)
+        self.scheduler_D_anime = lr_scheduler.LambdaLR(self.optimizer_D_anime, lr_lambda=lambda_rule)
+ 
+    def update_learning_rate(self):
+        """Call this once at the END of each epoch (after all batches),
+        not per-batch. Returns the generator's current LR for logging."""
+        self.scheduler_G.step()
+        self.scheduler_D_face.step()
+        self.scheduler_D_anime.step()
+        return self.optimizer_G.param_groups[0]["lr"]
     def train_step(self, real_face, real_anime):
         real_face = real_face.to(self.device)
         real_anime = real_anime.to(self.device)

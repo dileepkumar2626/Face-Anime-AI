@@ -6,7 +6,7 @@ sys.path.append(str(PROJECT_ROOT))
 from src.models.cyclegan import CycleGAN
 from src.data.dataloader import train_data_loader
 from src.utils.checkpoint import save_checkpoint
-def train(num_epochs=30,lr=2e-4,lambda_cycle=10.0,lambda_identity=0.5,checkpoint_dir="checkpoints",log_every=50,device=None):
+def train(num_epochs=10,lr=2e-4,lambda_cycle=10.0,lambda_identity=0.5,checkpoint_dir="checkpoints",log_every=50,decay_epoch=None,device=None):
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     if torch.cuda.is_available():
@@ -14,7 +14,8 @@ def train(num_epochs=30,lr=2e-4,lambda_cycle=10.0,lambda_identity=0.5,checkpoint
     checkpoint_dir = Path(checkpoint_dir)
     checkpoint_dir.mkdir(parents=True,exist_ok=True)
     train_loader = train_data_loader
-    model = CycleGAN(lr=lr,lambda_cycle=lambda_cycle,lambda_identity=lambda_identity,device=device,)
+    decay_epoch = decay_epoch if decay_epoch is not None else num_epochs // 2
+    model = CycleGAN(lr=lr,lambda_cycle=lambda_cycle,lambda_identity=lambda_identity,device=device,n_epochs=num_epochs,decay_epoch=decay_epoch,)
     best_loss = float("inf")
     for epoch in range(1, num_epochs + 1):
         epoch_total_loss = 0.0
@@ -42,8 +43,10 @@ def train(num_epochs=30,lr=2e-4,lambda_cycle=10.0,lambda_identity=0.5,checkpoint
                 running = {}
                 n_batches = 0
         epoch_loss = (epoch_total_loss / epoch_batches)
+        current_lr = model.update_learning_rate()
         print(f"\nEpoch {epoch}/{num_epochs} finished")
         print(f"Average epoch loss: {epoch_loss:.4f}")
+        print(f"Learning rate: {current_lr:.6f}")
         if epoch_loss < best_loss:
             best_loss = epoch_loss
             save_checkpoint(model,epoch,checkpoint_dir)
@@ -55,4 +58,4 @@ def train(num_epochs=30,lr=2e-4,lambda_cycle=10.0,lambda_identity=0.5,checkpoint
             print(f"Best loss: {best_loss:.4f}")
     return model
 if __name__ == "__main__":
-    train(num_epochs=30)
+    train(num_epochs=10)
