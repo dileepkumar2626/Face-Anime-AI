@@ -7,11 +7,12 @@ from contextlib import asynccontextmanager
 import torch
 from fastapi import FastAPI, File, HTTPException, UploadFile
 from fastapi.responses import StreamingResponse
+from fastapi.middleware.cors import CORSMiddleware
 from PIL import Image, UnidentifiedImageError
 PROJECT_ROOT = Path(__file__).resolve().parents[2]
 sys.path.insert(0, str(PROJECT_ROOT))
-from src.inference import load_generator, run_inference, denormalize  # noqa: E402
-from torchvision import transforms  # noqa: E402
+from src.inference import load_generator, run_inference, denormalize
+from torchvision import transforms
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("face-anime-api")
 CHECKPOINT_PATH = os.environ.get(
@@ -39,6 +40,13 @@ app = FastAPI(
     description="CycleGAN face -> anime inference API",
     version="1.0.0",
     lifespan=lifespan,
+)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173"],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 def _ensure_generator_loaded():
     if state["generator"] is None:

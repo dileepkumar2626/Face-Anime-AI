@@ -1,0 +1,74 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  background: #f4f4f6;
+  color: #222;
+}
+
+.app {
+  max-width: 480px;
+  margin: 40px auto;
+  padding: 32px;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+  text-align: center;
+}
+
+h1 {
+  font-size: 1.6rem;
+  margin-bottom: 24px;
+}
+
+.upload-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+}
+
+.file-button,
+.generate-button,
+.download-button {
+  display: inline-block;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: none;
+  background: #4f46e5;
+  color: white;
+  font-size: 0.95rem;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.file-button:hover,
+.generate-button:hover:not(:disabled),
+.download-button:hover {
+  background: #4338ca;
+}
+
+.generate-button:disabled {
+  background: #a5a5a5;
+  cursor: not-allowed;
+}
+
+.image-block {
+  width: 100%;
+}
+
+.image-block img {
+  width: 100%;
+  max-width: 320px;
+  border-radius: 8px;
+  margin-top: 8px;
+  border: 1px solid #ddd;
+}
+
+.error {
+  color: #dc2626;
+  font-size: 0.9rem;
+}
