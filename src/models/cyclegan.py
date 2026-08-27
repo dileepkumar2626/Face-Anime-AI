@@ -9,6 +9,7 @@ sys.path.append(str(PROJECT_ROOT))
 from src.models.generator import ResnetGenerator
 from src.models.discriminator import PatchDiscriminator
 from src.models.losses import CycleGANLosses
+from src.utils.image_pool import ImagePool
 class CycleGAN(nn.Module):
     def __init__(
         self,
@@ -19,7 +20,8 @@ class CycleGAN(nn.Module):
         lambda_identity=0.5,
         device="cuda",
         n_epochs=20,
-        decay_epoch=40
+        decay_epoch=40,
+        pool_size=50,
     ):
         super().__init__()
         self.device = device
@@ -40,6 +42,8 @@ class CycleGAN(nn.Module):
             lambda_identity=lambda_identity,
             device=device,
         )
+        self.fake_anime_pool = ImagePool(pool_size=pool_size)
+        self.fake_face_pool = ImagePool(pool_size=pool_size)
         self.optimizer_G = optim.Adam(
             list(self.G_face2anime.parameters()) +
             list(self.G_anime2face.parameters()),
@@ -69,8 +73,6 @@ class CycleGAN(nn.Module):
         self.scheduler_D_anime = lr_scheduler.LambdaLR(self.optimizer_D_anime, lr_lambda=lambda_rule)
  
     def update_learning_rate(self):
-        """Call this once at the END of each epoch (after all batches),
-        not per-batch. Returns the generator's current LR for logging."""
         self.scheduler_G.step()
         self.scheduler_D_face.step()
         self.scheduler_D_anime.step()
@@ -99,11 +101,13 @@ class CycleGAN(nn.Module):
         )
         g_loss.backward()
         self.optimizer_G.step()
+        pooled_fake_face = self.fake_face_pool.query(fake_face)
+        pooled_fake_anime = self.fake_anime_pool.query(fake_anime)
         self.optimizer_D_face.zero_grad()
         d_face_loss = self.losses.compute_discriminator_loss(
             self.D_face,
             real_face,
-            fake_face,
+            pooled_fake_face,
         )
         d_face_loss.backward()
         self.optimizer_D_face.step()
@@ -111,7 +115,7 @@ class CycleGAN(nn.Module):
         d_anime_loss = self.losses.compute_discriminator_loss(
             self.D_anime,
             real_anime,
-            fake_anime,
+            pooled_fake_anime,
         )
         d_anime_loss.backward()
         self.optimizer_D_anime.step()

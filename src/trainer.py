@@ -47,6 +47,7 @@ def train(num_epochs=10,lr=2e-4,lambda_cycle=10.0,lambda_identity=0.5,checkpoint
         print(f"\nEpoch {epoch}/{num_epochs} finished")
         print(f"Average epoch loss: {epoch_loss:.4f}")
         print(f"Learning rate: {current_lr:.6f}")
+        save_checkpoint(model, epoch, checkpoint_dir, filename=f"epoch_{epoch:03d}.pth")
         if epoch_loss < best_loss:
             best_loss = epoch_loss
             save_checkpoint(model,epoch,checkpoint_dir)
