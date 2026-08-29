@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import "./index.css";
 
 const API_URL = "http://127.0.0.1:8000/predict";
@@ -9,6 +9,7 @@ function App() {
   const [resultUrl, setResultUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const fileInputRef = useRef(null);
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -44,49 +45,129 @@ function App() {
       const blob = await response.blob();
       setResultUrl(URL.createObjectURL(blob));
     } catch (err) {
-      setError(err.message || "Something went wrong while generating the image.");
+      setError(
+        err.message || "Transformation failed. Check that the server is running."
+      );
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="app">
-      <h1>Face → Anime AI</h1>
+    <div className="page">
+      <header className="masthead">
+        <div className="masthead-mark">
+          FACE<span className="arrow">→</span>ANIME
+        </div>
+        <div className="masthead-tag">image-to-image · cyclegan</div>
+      </header>
 
-      <div className="upload-section">
-        <label className="file-button">
-          Choose Image
-          <input type="file" accept="image/*" onChange={handleFileChange} hidden />
-        </label>
-
-        {previewUrl && (
-          <div className="image-block">
-            <h3>Your selected image</h3>
-            <img src={previewUrl} alt="Selected face" />
+      <main className="spread">
+        {/* Panel 01 — input */}
+        <section className="panel panel--input">
+          <div className="panel-label">
+            <span className="panel-number">01</span>
+            <span className="panel-name">original</span>
           </div>
-        )}
 
-        <button
-          className="generate-button"
-          onClick={handleGenerate}
-          disabled={!selectedFile || loading}
-        >
-          {loading ? "Generating..." : "Generate Anime"}
-        </button>
+          <label
+            className={`dropzone ${previewUrl ? "dropzone--filled" : ""}`}
+            onClick={() => !previewUrl && fileInputRef.current?.click()}
+          >
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept="image/*"
+              onChange={handleFileChange}
+              hidden
+            />
+            {previewUrl ? (
+              <img src={previewUrl} alt="Selected face" className="panel-image" />
+            ) : (
+              <div className="dropzone-empty">
+                <div className="dropzone-icon">＋</div>
+                <p>Choose a face photo</p>
+                <span className="dropzone-hint">JPG, PNG, or WEBP</span>
+              </div>
+            )}
+          </label>
 
-        {error && <p className="error">{error}</p>}
+          {previewUrl && (
+            <button
+              className="ghost-button"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              swap image
+            </button>
+          )}
+        </section>
 
-        {resultUrl && (
-          <div className="image-block">
-            <h3>Generated result</h3>
-            <img src={resultUrl} alt="Generated anime" />
-            <a href={resultUrl} download="anime_result.jpg" className="download-button">
-              Download
+        {/* Center action */}
+        <div className="gutter">
+          <button
+            className={`burst-button ${loading ? "burst-button--loading" : ""}`}
+            onClick={handleGenerate}
+            disabled={!selectedFile || loading}
+          >
+            <span className="burst-shape" aria-hidden="true" />
+            <span className="burst-label">
+              {loading ? "working" : "transform"}
+            </span>
+          </button>
+        </div>
+
+        {/* Panel 02 — output */}
+        <section className="panel panel--output">
+          <div className="panel-label">
+            <span className="panel-number">02</span>
+            <span className="panel-name">transformed</span>
+          </div>
+
+          <div className={`resultzone ${loading ? "resultzone--loading" : ""}`}>
+            {loading && (
+              <div className="speed-lines" aria-hidden="true">
+                <span />
+                <span />
+                <span />
+                <span />
+                <span />
+              </div>
+            )}
+
+            {!loading && resultUrl && (
+              <img src={resultUrl} alt="Generated anime" className="panel-image" />
+            )}
+
+            {!loading && !resultUrl && (
+              <div className="resultzone-empty">
+                <div className="dropzone-icon">〜</div>
+                <p>
+                  {selectedFile
+                    ? "Ready — hit transform"
+                    : "Your anime version appears here"}
+                </p>
+              </div>
+            )}
+          </div>
+
+          {resultUrl && (
+            <a href={resultUrl} download="anime_result.jpg" className="ghost-button">
+              download result
             </a>
-          </div>
-        )}
-      </div>
+          )}
+        </section>
+      </main>
+
+      {error && (
+        <div className="error-strip" role="alert">
+          <span className="error-mark">!</span>
+          {error}
+        </div>
+      )}
+
+      <footer className="footer">
+        running locally · <span className="footer-mono">127.0.0.1:8000</span>
+      </footer>
     </div>
   );
 }
