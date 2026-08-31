@@ -1,15 +1,22 @@
 .git
 .gitignore
+
 .venv
 venv
+env
 __pycache__
 *.pyc
-.ipynb_checkpoints
+*.pyo
+*.log
 
-notebooks/
+.ipynb_checkpoints
+notebooks
+
+data/raw_data
+data/processed
 
 frontend/node_modules
 frontend/dist
 
-data/raw_data
-data/processed
+*.zip
+*.tar

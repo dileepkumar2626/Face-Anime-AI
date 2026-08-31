@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import "./index.css";
 
-const API_URL = "http://127.0.0.1:8000/predict";
+const API_URL = `${import.meta.env.VITE_API_URL}/predict`;
 
 function App() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -166,7 +166,7 @@ function App() {
       )}
 
       <footer className="footer">
-        running locally · <span className="footer-mono">127.0.0.1:8000</span>
+          Face → Anime AI · <span className="footer-mono">CycleGAN</span>
       </footer>
     </div>
   );
