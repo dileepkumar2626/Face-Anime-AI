@@ -17,7 +17,7 @@ env/
 .env
 
 # ML artifacts (kept on Drive, not GitHub)
-checkpoints/
+# checkpoints/
 !best_model.pth
 epoch_001.pth
 epoch_002.pth
