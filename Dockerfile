@@ -12,7 +12,11 @@ RUN pip install --no-cache-dir \
     python-multipart>=0.0.6
 
 COPY src ./src
-COPY checkpoints ./checkpoints
+
+# checkpoints/ is intentionally NOT copied here — it's gitignored and won't
+# exist in a fresh clone, which would make this COPY fail the build.
+# It's mounted as a volume instead (see docker-compose.yml), so anyone can
+# drop their own best_model.pth in without rebuilding the image.
 
 EXPOSE 8000
 

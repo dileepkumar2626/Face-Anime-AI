@@ -18,17 +18,7 @@ env/
 
 # ML artifacts (kept on Drive, not GitHub)
 # checkpoints/
-!best_model.pth
-epoch_001.pth
-epoch_002.pth
-epoch_003.pth
-epoch_004.pth
-epoch_005.pth
-epoch_006.pth
-epoch_007.pth
-epoch_008.pth
-epoch_009.pth
-epoch_010.pth
+*.pth
 *.pt
 *.h5
 *.ckpt

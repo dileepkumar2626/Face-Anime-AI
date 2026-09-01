@@ -1,16 +1,23 @@
 services:
 
   backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: face-anime-api:gpu
     container_name: face-anime-backend
     ports:
       - "8000:8000"
     environment:
       CHECKPOINT_PATH: /app/checkpoints/best_model.pth
-    gpus: all
+    volumes:
+      - ./checkpoints:/app/checkpoints
     restart: unless-stopped
 
   frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
     image: face-anime-frontend:latest
     container_name: face-anime-frontend
     ports:
