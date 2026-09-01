@@ -1,0 +1,20 @@
+services:
+
+  backend:
+    image: face-anime-api:gpu
+    container_name: face-anime-backend
+    ports:
+      - "8000:8000"
+    environment:
+      CHECKPOINT_PATH: /app/checkpoints/best_model.pth
+    gpus: all
+    restart: unless-stopped
+
+  frontend:
+    image: face-anime-frontend:latest
+    container_name: face-anime-frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend
+    restart: unless-stopped
