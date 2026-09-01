@@ -9,7 +9,7 @@ services:
       CHECKPOINT_PATH: /app/checkpoints/best_model.pth
     volumes:
       - model_cache:/app/checkpoints
-    gpus: all
+    # gpus: all
     restart: unless-stopped
 
   frontend:
