@@ -188,6 +188,31 @@ GPU Deployment
 
 # 🧠 Model
 
+## 🤖 Pre-trained Model
+
+The trained model checkpoint is hosted on Hugging Face and is not included directly in this GitHub repository.
+
+### 📥 Download
+
+Download the pre-trained model:
+
+👉 [**Download `best_model.pth`**](https://huggingface.co/dileepkumar5175/face_to_anime/resolve/main/best_model.pth)
+
+After downloading, place the file inside the `checkpoints/` directory:
+
+```text
+Face-Anime-AI/
+├── checkpoints/
+│   └── best_model.pth
+├── src/
+├── app.py
+├── requirements.txt
+└── README.md
+```
+
+The `checkpoints/` directory is excluded from GitHub using `.gitignore` because model checkpoints are not stored in the source repository.
+
+
 ## CycleGAN
 
 The project uses **CycleGAN**, which allows image-to-image translation without requiring paired examples.
