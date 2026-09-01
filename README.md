@@ -19,7 +19,6 @@
 
 The system learns to translate between two visual domains:
 
-```text
 Real Face
     │
     ▼
