@@ -18,22 +18,56 @@ logger = logging.getLogger("face-anime-api")
 CHECKPOINT_PATH = os.environ.get(
     "CHECKPOINT_PATH", str(PROJECT_ROOT / "checkpoints" / "best_model.pth")
 )
+import urllib.request
+
+MODEL_URL = "https://huggingface.co/dileepkumar5175/face_to_anime/resolve/main/best_model.pth"
+
+
+def ensure_checkpoint():
+    checkpoint_path = Path(CHECKPOINT_PATH)
+
+    if checkpoint_path.exists():
+        logger.info("Checkpoint already exists: %s", checkpoint_path)
+        return
+
+    checkpoint_path.parent.mkdir(parents=True, exist_ok=True)
+
+    logger.info("Checkpoint not found. Downloading model...")
+
+    urllib.request.urlretrieve(
+        MODEL_URL,
+        checkpoint_path
+    )
+
+    logger.info("Model downloaded to %s", checkpoint_path)
 DEVICE = "cuda" if torch.cuda.is_available() else "cpu"
 state = {"generator": None}
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+
     checkpoint_path = Path(CHECKPOINT_PATH)
-    if not checkpoint_path.exists():
-        logger.warning(
-            "Checkpoint not found at %s — /predict will fail until it exists "
-            "or CHECKPOINT_PATH is set correctly.",
+
+    try:
+        ensure_checkpoint()
+
+        logger.info(
+            "Loading generator from %s on %s",
             checkpoint_path,
+            DEVICE
         )
-    else:
-        logger.info("Loading generator from %s on %s", checkpoint_path, DEVICE)
-        state["generator"] = load_generator(str(checkpoint_path), DEVICE)
+
+        state["generator"] = load_generator(
+            str(checkpoint_path),
+            DEVICE
+        )
+
         logger.info("Generator ready.")
+
+    except Exception:
+        logger.exception("Failed to load generator")
+
     yield
+
     state["generator"] = None
 app = FastAPI(
     title="Face-Anime-AI",
