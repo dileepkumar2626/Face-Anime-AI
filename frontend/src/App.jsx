@@ -1,7 +1,7 @@
 import { useState, useRef } from "react";
 import "./index.css";
 
-const API_URL = `${import.meta.env.VITE_API_URL}/predict`;
+const API_BASE = import.meta.env.VITE_API_URL;
 
 function App() {
   const [selectedFile, setSelectedFile] = useState(null);
@@ -9,6 +9,7 @@ function App() {
   const [resultUrl, setResultUrl] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [model, setModel] = useState("cyclegan");
   const fileInputRef = useRef(null);
 
   const handleFileChange = (e) => {
@@ -32,7 +33,7 @@ function App() {
       const formData = new FormData();
       formData.append("file", selectedFile);
 
-      const response = await fetch(API_URL, {
+      const response = await fetch(`${API_BASE}/predict?model=${model}`, {
         method: "POST",
         body: formData,
       });
@@ -59,8 +60,27 @@ function App() {
         <div className="masthead-mark">
           FACE<span className="arrow">→</span>ANIME
         </div>
-        <div className="masthead-tag">image-to-image · cyclegan</div>
+        <div className="masthead-tag">image-to-image · {model === "animegan" ? "animeganv2" : "cyclegan"}</div>
       </header>
+
+      <div className="model-select-row">
+        <label htmlFor="model-select" className="model-select-label">
+          model
+        </label>
+        <select
+          id="model-select"
+          className="model-select"
+          value={model}
+          onChange={(e) => {
+            setModel(e.target.value);
+            setResultUrl(null);
+            setError(null);
+          }}
+        >
+          <option value="cyclegan">CycleGAN — Custom Model</option>
+          <option value="animegan">AnimeGANv2 — Face Paint v2</option>
+        </select>
+      </div>
 
       <main className="spread">
         {/* Panel 01 — input */}
@@ -166,7 +186,7 @@ function App() {
       )}
 
       <footer className="footer">
-          Face → Anime AI · <span className="footer-mono">CycleGAN</span>
+          Face → Anime AI · <span className="footer-mono">{model === "animegan" ? "AnimeGANv2" : "CycleGAN"}</span>
       </footer>
     </div>
   );

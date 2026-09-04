@@ -6,7 +6,7 @@ sys.path.append(str(PROJECT_ROOT))
 from src.models.cyclegan import CycleGAN
 from src.data.dataloader import train_data_loader
 from src.utils.checkpoint import save_checkpoint
-def train(num_epochs=10,lr=2e-4,lambda_cycle=10.0,lambda_identity=0.5,checkpoint_dir="checkpoints",log_every=50,decay_epoch=None,device=None):
+def train(num_epochs=50,lr=2e-4,lambda_cycle=10.0,lambda_identity=0.5,checkpoint_dir="checkpoints",log_every=50,decay_epoch=None,device=None):
     device = device or ("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using device: {device}")
     if torch.cuda.is_available():
@@ -59,4 +59,4 @@ def train(num_epochs=10,lr=2e-4,lambda_cycle=10.0,lambda_identity=0.5,checkpoint
             print(f"Best loss: {best_loss:.4f}")
     return model
 if __name__ == "__main__":
-    train(num_epochs=10)
+    train(num_epochs=50)
