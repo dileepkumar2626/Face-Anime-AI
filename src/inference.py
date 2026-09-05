@@ -6,6 +6,7 @@ from PIL import Image
 from pathlib import Path
 PROJECT_ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
+from src.data.transforms import crop_face
 from src.data.transforms import transform_test_data
 from src.models.generator import ResnetGenerator
 IMAGE_SIZE = 256
@@ -23,9 +24,8 @@ def load_generator(checkpoint_path, device):
     generator.eval()  
     return generator
 def run_inference(generator, image, device):
-    if isinstance(image, (str, Path)):
-        image = Image.open(image).convert("RGB")
-    input_tensor = test_transform(image).unsqueeze(0).to(device)
+    image = crop_face(image,margin=0.25,)
+    input_tensor = transform_test_data(256)(image).unsqueeze(0).to(device)
     with torch.no_grad():
         fake_anime = generator(input_tensor)
     return fake_anime.squeeze(0).cpu() 
