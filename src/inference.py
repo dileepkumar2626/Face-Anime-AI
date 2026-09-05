@@ -8,20 +8,23 @@ PROJECT_ROOT=Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(PROJECT_ROOT))
 from src.data.transforms import crop_face
 from src.data.transforms import transform_test_data
-from src.models.generator import ResnetGenerator
+from src.models.generator import ResnetGenerator, AnimeGANv2Generator
 IMAGE_SIZE = 256
 test_transform = transform_test_data(IMAGE_SIZE)
 denormalize = transforms.Normalize(
     mean=[-1.0, -1.0, -1.0],
     std=[2.0, 2.0, 2.0],
 )
-def load_generator(checkpoint_path, device):
-    generator = ResnetGenerator(input_nc=3, output_nc=3, n_residual_blocks=9).to(device)
- 
+def load_generator(checkpoint_path, device, model_id="cyclegan_v1"):
+    if model_id == "anime2_v2":
+        generator = AnimeGANv2Generator().to(device)
+    else:
+        generator = ResnetGenerator(input_nc=3, output_nc=3, n_residual_blocks=9).to(device)
+
     checkpoint = torch.load(checkpoint_path, map_location=device)
     state_dict = checkpoint["G_face2anime"] if "G_face2anime" in checkpoint else checkpoint
     generator.load_state_dict(state_dict)
-    generator.eval()  
+    generator.eval()
     return generator
 def run_inference(generator, image, device):
     image = crop_face(image,margin=0.25,)

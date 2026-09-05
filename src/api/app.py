@@ -152,6 +152,7 @@ def get_generator(model_id: str):
         generator = load_generator(
             str(checkpoint_path),
             DEVICE,
+            model_id,
         )
     except Exception as exc:
         logger.exception(
