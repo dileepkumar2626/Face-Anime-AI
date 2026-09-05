@@ -37,8 +37,9 @@
 
 **Face → Anime AI** is an unpaired image-to-image translation system. At its core is a **CycleGAN**
 trained from scratch on a real-face domain and an anime-face domain, with no paired examples required.
-The API also ships a second, pretrained option — **AnimeGANv2 (face_paint_512_v2)** — so a user can
-compare the custom model against a well-known reference model from a single interface.
+The API also ships a second option, **Anime2 V2** — the AnimeGANv2 (`face_paint_512_v2`) generator
+architecture with its pretrained weights re-hosted as our own checkpoint — so a user can compare
+the from-scratch CycleGAN against a well-known reference model from a single interface.
 
 ```text
                     ┌─────────────────────┐
@@ -70,7 +71,7 @@ Dataset → EDA → Preprocessing → PyTorch Dataset/DataLoader
 - LSGAN adversarial objective, cycle-consistency loss (L1), identity loss (L1)
 - **Fake-image replay buffer** (`ImagePool`, size 50) to stabilize discriminator training
 - **Linear learning-rate decay** starting at the midpoint of training
-- Second, pretrained **AnimeGANv2** model (`face_paint_512_v2`) available as an alternate style
+- Second model, **Anime2 V2** — the AnimeGANv2 generator architecture (`face_paint_512_v2` weights), re-packaged as its own checkpoint (`anime2_v2.pth`) and hosted on our Hugging Face repo, so inference no longer depends on `torch.hub` at request time
 - 256×256 training resolution, CUDA-accelerated training and inference
 
 ### 🧪 Data Pipeline
@@ -83,10 +84,10 @@ Dataset → EDA → Preprocessing → PyTorch Dataset/DataLoader
 
 ### 🌐 Application
 
-- FastAPI inference service with **model selection** (`cyclegan` or `animegan`) per request
-- Automatic checkpoint download from Hugging Face on first startup if none is found locally
-- React + Vite frontend: upload, live preview, model picker, generate, download result
-- `/health` endpoint reporting device and per-model load status
+- FastAPI inference service with **model selection** (`cyclegan_v1` or `anime2_v2`) per request, plus a `/models` endpoint the frontend queries to build its model picker
+- Each model has its own checkpoint filename; missing checkpoints are downloaded from Hugging Face on first request for that model (not at startup) and then cached
+- React + Vite frontend: upload, live preview, model picker (populated from `/models`), generate, download result
+- `/health` endpoint reporting device, available/loaded models, and the checkpoint directory in use
 
 ### 🐳 Deployment
 
@@ -109,20 +110,21 @@ Dataset → EDA → Preprocessing → PyTorch Dataset/DataLoader
                 │  Pick Model        │
                 │  Generate          │
                 └─────────┬──────────┘
-                          │ POST /predict?model=cyclegan|animegan
+                          │ POST /predict  (form fields: file, model=cyclegan_v1|anime2_v2)
                           ▼
-                ┌────────────────────┐
-                │      FastAPI       │
-                │  /health /predict  │
-                └─────────┬──────────┘
+                ┌────────────────────────────┐
+                │          FastAPI           │
+                │ /health /models /predict   │
+                └─────────────┬──────────────┘
                           │
               ┌───────────┴───────────┐
               ▼                       ▼
-    ┌───────────────────┐   ┌─────────────────────────┐
-    │  Custom CycleGAN   │   │  AnimeGANv2 (pretrained) │
-    │  face-crop → resize│   │  face2paint pipeline     │
-    │  G_face2anime      │   │  torch.hub weights       │
-    └─────────┬──────────┘   └───────────┬─────────────┘
+    ┌───────────────────┐   ┌──────────────────────────┐
+    │ cyclegan_v1        │   │ anime2_v2                │
+    │ Custom CycleGAN    │   │ AnimeGANv2 architecture  │
+    │ face-crop → resize │   │ face-crop → resize       │
+    │ G_face2anime       │   │ weights mirrored to HF   │
+    └─────────┬──────────┘   └───────────┬──────────────┘
               └───────────┬──────────────┘
                           ▼
                 ┌────────────────────┐
@@ -136,27 +138,34 @@ Dataset → EDA → Preprocessing → PyTorch Dataset/DataLoader
 
 ## 🧠 Model
 
-### Pretrained checkpoint (custom CycleGAN)
+### Pretrained checkpoints
 
-The trained CycleGAN checkpoint is hosted on Hugging Face rather than committed to Git:
+Both checkpoints are hosted on Hugging Face rather than committed to Git — the repo they're
+served from is set by the `HF_BASE_URL` environment variable (defaults to
+`https://huggingface.co/dileepkumar5175/face_to_anime/resolve/main`):
 
-👉 [**Download `best_model.pth`**](https://huggingface.co/dileepkumar5175/face_to_anime/resolve/main/best_model.pth)
+| `model` value | Checkpoint file | Architecture | Download |
+|---|---|---|---|
+| `cyclegan_v1` | `best_model.pth` | Custom `ResnetGenerator` (9 residual blocks), trained from scratch in this repo | 👉 [**Download `best_model.pth`**](https://huggingface.co/dileepkumar5175/face_to_anime/resolve/main/best_model.pth) |
+| `anime2_v2` | `anime2_v2.pth` | `AnimeGANv2Generator` — the AnimeGANv2 (`face_paint_512_v2`) architecture, with its pretrained weights re-saved as a standalone checkpoint (see `src/models/animegan.py`) | 👉 [**Download `anime2_v2.pth`**](https://huggingface.co/dileepkumar5175/face_to_anime/resolve/main/anime2_v2.pth) |
 
-Place it inside `checkpoints/`:
+Place whichever checkpoint(s) you need inside `checkpoints/`:
 
 ```text
 Face-Anime-AI/
 ├── checkpoints/
-│   └── best_model.pth   (or epoch_XXX.pth — see note below)
+│   ├── best_model.pth     # cyclegan_v1
+│   └── anime2_v2.pth      # anime2_v2
 ├── src/
 ├── requirements.txt
 └── README.md
 ```
 
-> **Note:** the API's default `CHECKPOINT_PATH` points at `checkpoints/epoch_024.pth`. If you
-> download `best_model.pth` instead, either rename it to match or set the `CHECKPOINT_PATH`
-> environment variable to the file you have. If no checkpoint is present at startup, the API
-> automatically downloads `best_model.pth` from Hugging Face into that path.
+> **Note:** you don't need to download these manually to run the API — if a checkpoint isn't
+> found in `CHECKPOINT_DIR` (default `checkpoints/`) the first `/predict` request for that model
+> triggers an automatic download from `HF_BASE_URL` before inference runs. Manual download is
+> only needed for offline use, CLI inference (`src/inference.py`), or pre-warming the Docker
+> `model_cache` volume.
 
 The `checkpoints/` directory is excluded from Git via `.gitignore`.
 
@@ -264,40 +273,40 @@ A few examples from the anime-face domain the generator is trained to match:
 Face-Anime-AI/
 │
 ├── data/
-│   ├── processed/          # JSON index files for real/anime train & test splits
-│   └── sample_images/      # Sample outputs / epoch previews
+│   ├── processed/          
+│   └── sample_images/      
 │
-├── checkpoints/            # Model weights (gitignored)
+├── checkpoints/            
 │
 ├── src/
 │   ├── api/
-│   │   └── app.py          # FastAPI service (CycleGAN + AnimeGANv2)
+│   │   └── app.py          
 │   ├── data/
-│   │   ├── dataset.py       # CycleGANDataset + train/test dataset instances
-│   │   ├── dataloader.py    # DataLoaders
+│   │   ├── dataset.py       
+│   │   ├── dataloader.py    
 │   │   ├── preprocessing.py
-│   │   └── transforms.py    # train/test transforms + face-crop utility
+│   │   └── transforms.py    
 │   ├── models/
-│   │   ├── generator.py     # ResnetGenerator
-│   │   ├── discriminator.py # PatchDiscriminator
-│   │   ├── cyclegan.py      # CycleGAN wrapper (optimizers, schedulers, train_step)
-│   │   ├── animegan.py      # AnimeGANv2 wrapper (torch.hub)
+│   │   ├── generator.py    
+│   │   ├── discriminator.py 
+│   │   ├── cyclegan.py      
+│   │   ├── animegan.py      
 │   │   └── losses.py
 │   ├── utils/
-│   │   ├── checkpoint.py    # save/load checkpoint
-│   │   └── image_pool.py    # fake-image replay buffer
-│   ├── inference.py         # CLI inference script
-│   └── trainer.py           # Training loop
+│   │   ├── checkpoint.py    
+│   │   └── image_pool.py    
+│   ├── inference.py         
+│   └── trainer.py           
 │
 ├── notebooks/
 │   ├── 01_EDA.ipynb
 │   └── test_evaluation.ipynb
 │
-├── frontend/                # React + Vite app
+├── frontend/                
 │   ├── src/App.jsx
 │   └── Dockerfile
 │
-├── Dockerfile               # Backend image (PyTorch + CUDA + FastAPI)
+├── Dockerfile               
 ├── docker-compose.yml
 ├── requirements.txt
 └── README.md
@@ -314,7 +323,7 @@ git clone https://github.com/dileepkumar2626/Face-Anime-AI.git
 cd Face-Anime-AI
 
 python -m venv .venv
-source .venv/bin/activate      # Windows: .venv\Scripts\activate
+Windows: .venv/Scripts/activate
 
 pip install -r requirements.txt
 ```
@@ -340,9 +349,8 @@ train(
     lambda_identity=0.5,
     checkpoint_dir="checkpoints",
     log_every=50,
-    decay_epoch=None,   # defaults to num_epochs // 2
-    device=None,        # auto-detects CUDA
-)
+    decay_epoch=None,   
+    device=None,       
 ```
 
 Each epoch saves a numbered checkpoint (`epoch_NNN.pth`) and updates `best_model.pth` whenever the
@@ -370,16 +378,20 @@ Pipeline: `Face Detection & Crop → Resize (256×256) → Normalize → G_face2
 uvicorn src.api.app:app --host 0.0.0.0 --port 8000
 ```
 
-| Endpoint  | Method | Purpose                                                  |
-|-----------|--------|-----------------------------------------------------------|
-| `/health` | GET    | Device + per-model (`cyclegan`, `animegan`) load status   |
-| `/predict`| POST   | Upload an image (`file`), pick `model=cyclegan\|animegan` |
-| `/docs`   | GET    | Interactive Swagger UI                                    |
+| Endpoint            | Method | Purpose                                                                 |
+|---------------------|--------|--------------------------------------------------------------------------|
+| `/health`           | GET    | Device, `available_models` / `loaded_models`, and the active checkpoint directory |
+| `/models`           | GET    | List of models (`id`, `name`, `description`) for the frontend's picker |
+| `/models/{model_id}`| GET    | Single model's checkpoint filename, `downloaded`, and `loaded` status  |
+| `/predict`          | POST   | Multipart form: `file` (image) + `model` (`cyclegan_v1` or `anime2_v2`, defaults to `anime2_v2`) |
+| `/docs`             | GET    | Interactive Swagger UI                                                  |
 
-At startup the API tries to load both models independently — if one fails to load (e.g. missing
-checkpoint or no internet for the `torch.hub` weights), `/health` reports it as `model_not_loaded`
-without taking down the other model. CORS is currently scoped to `http://localhost:5173` for local
-frontend development.
+Models are loaded lazily and cached in memory: the first `/predict` (or `/models/{model_id}`
+checkpoint check) for a given `model` downloads its checkpoint from `HF_BASE_URL` if it isn't
+already in `CHECKPOINT_DIR`, loads it, and keeps it resident for subsequent requests — a failure
+for one model doesn't affect the other. CORS currently allows `http://localhost:5173` and
+`http://127.0.0.1:5173` for local frontend development (update the placeholder origin in
+`src/api/app.py` before deploying).
 
 ---
 
@@ -404,10 +416,14 @@ docker compose up
 ```
 
 - **Backend** — `pytorch/pytorch:2.7.1-cuda12.6-cudnn9-runtime` base, installs project requirements
-  plus FastAPI/uvicorn, pre-downloads the AnimeGANv2 weights at build time, and serves on `:8000`.
+  plus FastAPI/uvicorn, and serves on `:8000`. The Dockerfile still pre-downloads the original
+  AnimeGANv2 weights via `torch.hub` at build time — this predates the switch to per-model
+  Hugging Face checkpoints in `src/api/app.py` and is no longer read by the running API (see
+  Future Work); the actual `cyclegan_v1` / `anime2_v2` checkpoints are fetched into the
+  `model_cache` volume at request time instead.
 - **Frontend** — multi-stage build: `node:22-alpine` builds the Vite app, then `nginx:alpine` serves
   the static bundle on `:80` (mapped to `:5173` by Compose).
-- A named volume (`model_cache`) persists downloaded CycleGAN checkpoints across container restarts.
+- A named volume (`model_cache`) persists downloaded checkpoints for both models across container restarts.
 - GPU passthrough is present in `docker-compose.yml` but commented out (`# gpus: all`) — uncomment
   it on a host with the NVIDIA Container Toolkit installed.
 
@@ -449,6 +465,8 @@ testing were done on an NVIDIA RTX 4060.
 - [ ] Public cloud GPU deployment
 - [ ] Production monitoring and API rate limiting
 - [ ] Fix the default `CHECKPOINT_PATH` / checkpoint-filename mismatch between training output and API expectations
+- [ ] Remove the now-unused `torch.hub` AnimeGANv2 download step from `Dockerfile` (superseded by the `anime2_v2.pth` Hugging Face checkpoint)
+- [ ] Replace the placeholder CORS origin in `src/api/app.py` with the real deployment domain
 - [ ] User authentication
 
 ---
@@ -460,7 +478,7 @@ testing were done on an NVIDIA RTX 4060.
 | Language | Python, JavaScript |
 | Deep Learning | PyTorch, torchvision |
 | Face Detection | OpenCV (Haar cascade) |
-| Reference Model | AnimeGANv2 (`torch.hub`) |
+| Reference Model | AnimeGANv2 architecture (`anime2_v2.pth` checkpoint, mirrored from `torch.hub` weights) |
 | Architecture | CycleGAN (ResNet generator, PatchGAN discriminator) |
 | API | FastAPI, Uvicorn |
 | Frontend | React 19, Vite |
