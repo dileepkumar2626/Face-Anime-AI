@@ -29,16 +29,16 @@ wandb/
 outputs/
 
 # Data (kept on Drive, not GitHub)
-/data/raw/
-*.csv
-*.zip
-*.tar.gz
-# Images (dataset - kept on Drive, not GitHub)
-*.png
-*.jpg
-*.jpeg
-*.bmp
-*.tiff
+/data/raw_data/
+# *.csv
+# *.zip
+# *.tar.gz
+# # Images (dataset - kept on Drive, not GitHub)
+# *.png
+# *.jpg
+# *.jpeg
+# *.bmp
+# *.tiff
 # OS / editor junk
 .DS_Store
 Thumbs.db

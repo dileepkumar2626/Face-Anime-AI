@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("face-anime-api")
 
 CHECKPOINT_PATH = os.environ.get(
-    "CHECKPOINT_PATH", str(PROJECT_ROOT / "checkpoints" / "epoch_022.pth")
+    "CHECKPOINT_PATH", str(PROJECT_ROOT / "checkpoints" / "epoch_024.pth")
 )
 MODEL_URL = "https://huggingface.co/dileepkumar5175/face_to_anime/resolve/main/best_model.pth"
 
