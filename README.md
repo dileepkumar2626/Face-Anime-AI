@@ -323,7 +323,7 @@ git clone https://github.com/dileepkumar2626/Face-Anime-AI.git
 cd Face-Anime-AI
 
 python -m venv .venv
-Windows: .venv/Scripts/activate
+Windows: .venv\Scripts\activate
 
 pip install -r requirements.txt
 ```
