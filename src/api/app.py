@@ -23,7 +23,7 @@ logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger("face-anime-api")
 
 CHECKPOINT_PATH = os.environ.get(
-    "CHECKPOINT_PATH", str(PROJECT_ROOT / "checkpoints" / "best_model.pth")
+    "CHECKPOINT_PATH", str(PROJECT_ROOT / "checkpoints" / "epoch_019.pth")
 )
 MODEL_URL = "https://huggingface.co/dileepkumar5175/face_to_anime/resolve/main/best_model.pth"
 
@@ -47,8 +47,6 @@ def ensure_checkpoint():
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    # Load CycleGAN (custom-trained research model). Wrapped in its own
-    # try/except so a failure here doesn't block AnimeGAN from loading.
     try:
         checkpoint_path = Path(CHECKPOINT_PATH)
         ensure_checkpoint()
@@ -57,9 +55,6 @@ async def lifespan(app: FastAPI):
         logger.info("CycleGAN ready.")
     except Exception:
         logger.exception("Failed to load CycleGAN generator")
-
-    # Load AnimeGANv2 (pretrained baseline). Independent try/except so a
-    # failure here doesn't block CycleGAN, and vice versa.
     try:
         logger.info("Loading AnimeGANv2 (Face Paint v2) on %s", DEVICE)
         state["animegan"] = AnimeGANv2(device=DEVICE)
