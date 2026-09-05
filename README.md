@@ -1,84 +1,81 @@
 # 🎨 Face → Anime AI
 
+```{=html}
 <p align="center">
-  <img src="https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white" />
-  <img src="https://img.shields.io/badge/PyTorch-2.x-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" />
-  <img src="https://img.shields.io/badge/CycleGAN-Image%20Translation-8A2BE2?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/FastAPI-API-009688?style=for-the-badge&logo=fastapi&logoColor=white" />
-  <img src="https://img.shields.io/badge/React-Frontend-61DAFB?style=for-the-badge&logo=react&logoColor=black" />
-  <img src="https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker&logoColor=white" />
-  <img src="https://img.shields.io/badge/NVIDIA-CUDA-76B900?style=for-the-badge&logo=nvidia&logoColor=white" />
+```
+`<img src="https://img.shields.io/badge/Python-3.12-3776AB?style=for-the-badge&logo=python&logoColor=white" />`{=html}
+`<img src="https://img.shields.io/badge/PyTorch-2.x-EE4C2C?style=for-the-badge&logo=pytorch&logoColor=white" />`{=html}
+`<img src="https://img.shields.io/badge/CycleGAN-Unpaired%20Translation-8A2BE2?style=for-the-badge" />`{=html}
+`<img src="https://img.shields.io/badge/FastAPI-API-009688?style=for-the-badge&logo=fastapi&logoColor=white" />`{=html}
+`<img src="https://img.shields.io/badge/React-Frontend-61DAFB?style=for-the-badge&logo=react&logoColor=black" />`{=html}
+`<img src="https://img.shields.io/badge/Docker-Containerized-2496ED?style=for-the-badge&logo=docker&logoColor=white" />`{=html}
+`<img src="https://img.shields.io/badge/CUDA-GPU%20Ready-76B900?style=for-the-badge&logo=nvidia&logoColor=white" />`{=html}
+```{=html}
 </p>
-
+```
+```{=html}
 <p align="center">
-  <strong>Transform real human faces into anime-style artwork using CycleGAN.</strong>
+```
+`<strong>`{=html}Unpaired real-face → anime image translation with a
+custom PyTorch CycleGAN pipeline.`</strong>`{=html}
+```{=html}
 </p>
-
+```
+```{=html}
 <p align="center">
-  A complete end-to-end deep learning application — from dataset exploration and model training to GPU inference, REST API, React frontend, and Docker deployment.
+```
+A complete computer-vision project covering dataset analysis,
+preprocessing, CycleGAN training, checkpointing, inference, a FastAPI
+backend, a React frontend, and containerization.
+```{=html}
 </p>
-
-<p align="center">
-  <a href="#-demo">Demo</a> •
-  <a href="#-features">Features</a> •
-  <a href="#-architecture">Architecture</a> •
-  <a href="#-model">Model</a> •
-  <a href="#-results">Results</a> •
-  <a href="#-installation">Installation</a> •
-  <a href="#-deployment">Deployment</a>
-</p>
-
----
-
-## 🖼️ Demo
-
-> **Real Face → Anime**
-
-<p align="center">
-  <img src="docs/images/demo.png" width="850" alt="Face to Anime Demo"/>
-</p>
-
-<!--
-Replace the image above with your actual before/after screenshot.
-
-Recommended:
-docs/
-└── images/
-    └── demo.png
--->
-
----
-
-## ✨ What is Face → Anime AI?
-
-**Face → Anime AI** is an unpaired image-to-image translation system built with **CycleGAN**.
-
-The model learns two visual domains:
-
-```text
-                    ┌─────────────────────┐
-                    │      CycleGAN       │
-                    │                     │
- Real Face ───────► │  Generator A → B    │ ───────► Anime
-                    │                     │
- Anime ───────────► │  Generator B → A    │ ───────► Real Face
-                    └─────────────────────┘
 ```
 
-The project is designed as a complete ML application rather than only a model experiment.
+------------------------------------------------------------------------
 
-```text
+## ✨ Overview
+
+**Face → Anime AI** learns to translate images between two visual
+domains:
+
+``` text
+REAL FACE DOMAIN                    ANIME DOMAIN
+
+      Real Face
+          │
+          ▼
+   ┌───────────────┐
+   │ G_face2anime  │ ───────────────► Anime
+   └───────────────┘
+
+   ┌───────────────┐
+   │ G_anime2face  │ ◄─────────────── Anime
+   └───────────────┘
+          ▲
+          │
+      Real-style Face
+```
+
+Unlike paired image-to-image translation, the training pipeline does
+**not require a one-to-one real/anime correspondence**. The dataset
+loader samples independently from the two domains.
+
+The repository also contains an application layer:
+
+``` text
 Dataset
    ↓
-EDA
+EDA + validation
    ↓
-Preprocessing
+Duplicate detection + train/test split
+   ↓
+JSON image indexes
    ↓
 PyTorch Dataset / DataLoader
    ↓
-CycleGAN Training
+CycleGAN
    ↓
-Checkpointing
+Checkpoints
    ↓
 Inference
    ↓
@@ -86,880 +83,939 @@ FastAPI
    ↓
 React
    ↓
-Docker + CUDA
+Docker
+```
+
+------------------------------------------------------------------------
+
+# 🧪 Dataset & EDA
+
+The included EDA notebook (`notebooks/01_EDA.ipynb`) records the dataset
+inspection performed before training.
+
+### Anime domain
+
+  Property               Observed value
+  -------------------- ----------------
+  Images found              **302,652**
+  Valid images              **302,652**
+  Corrupt/unreadable              **0**
+  Duplicate images                **0**
+  Resolution              **512 × 512**
+  Color mode                    **RGB**
+
+Sample images from the actual EDA notebook:
+
+```{=html}
+<p align="center">
+```
+`<img src="docs/images/anime_eda_samples.png" width="900" alt="Anime dataset EDA samples"/>`{=html}
+```{=html}
+</p>
+```
+### Real-face domain
+
+  Property                      Observed value
+  --------------------------- ----------------
+  Images found                     **202,599**
+  Valid images                     **202,599**
+  Corrupt/unreadable                     **0**
+  Duplicate images detected            **131**
+  Resolution                     **178 × 218**
+  Color mode                           **RGB**
+
+The preprocessing pipeline removes duplicate entries before the
+train/test split.
+
+```{=html}
+<p align="center">
+```
+`<img src="docs/images/real_eda_samples.png" width="900" alt="Real face dataset EDA samples"/>`{=html}
+```{=html}
+</p>
+```
+### Dataset split
+
+After duplicate removal and an 80/20 split:
+
+``` text
+Anime
+302,652 total
+├── 242,121 train
+└── 60,531 test
+
+Real
+202,599 total
+−     131 duplicates
+= 202,468 unique images
+├── 161,974 train
+└── 40,494 test
+```
+
+The generated JSON indexes are stored in:
+
+``` text
+data/processed/
+├── anime_train/anime_train.json
+├── anime_test/anime_test.json
+├── real_train/real_train.json
+└── real_test/real_test.json
+```
+
+The actual raw image datasets are intentionally not stored in the
+repository.
+
+------------------------------------------------------------------------
+
+# 🧠 Model Architecture
+
+The implementation uses a four-network CycleGAN:
+
+``` text
+                         CYCLE 1
+
+       Real Face ──► G_face2anime ──► Fake Anime
+          ▲                              │
+          │                              │
+          └──── G_anime2face ◄──────────┘
+
+
+                         CYCLE 2
+
+         Anime ──► G_anime2face ──► Fake Face
+          ▲                              │
+          │                              │
+          └──── G_face2anime ◄──────────┘
+```
+
+### Generators
+
+Both generators use a ResNet-style architecture:
+
+-   3-channel RGB input/output
+-   64 initial feature channels
+-   2 downsampling stages
+-   **9 residual blocks**
+-   2 upsampling stages
+-   Reflection padding
+-   Instance normalization
+-   ReLU activations
+-   `Tanh` output
+
+``` text
+RGB Image
    ↓
-GPU Deployment
+7×7 convolution
+   ↓
+Downsample ×2
+   ↓
+9 × Residual Blocks
+   ↓
+Upsample ×2
+   ↓
+7×7 convolution
+   ↓
+Tanh
+   ↓
+RGB Image
 ```
 
----
+### Discriminators
 
-# 🚀 Features
+Two PatchGAN-style discriminators are used:
 
-### 🤖 Machine Learning
-
-- CycleGAN-based unpaired image-to-image translation
-- ResNet-based generators
-- PatchGAN discriminators
-- LSGAN adversarial objective
-- Cycle-consistency loss
-- Identity loss
-- RGB image pipeline
-- 256 × 256 image generation
-- CUDA GPU inference
-
-### 🧪 Data Pipeline
-
-- Dataset exploration and analysis
-- Train/test organization
-- Image preprocessing
-- Configurable transformations
-- PyTorch `Dataset`
-- PyTorch `DataLoader`
-- JSON-based image indexing
-
-### 🌐 Application
-
-- FastAPI inference API
-- React web interface
-- Image upload and preview
-- Real-time transformation
-- Generated image preview
-- Result download
-- API health endpoint
-
-### 🐳 Deployment
-
-- Dockerized backend
-- Dockerized frontend
-- Docker Compose
-- NVIDIA GPU support
-- CUDA-enabled PyTorch inference
-
----
-
-# 🏗️ Architecture
-
-```text
-                         USER
-                           │
-                           ▼
-                ┌────────────────────┐
-                │     React UI       │
-                │                    │
-                │  Upload Face       │
-                │  Preview Image     │
-                │  Generate Anime    │
-                └─────────┬──────────┘
-                          │
-                          │ HTTP POST
-                          ▼
-                ┌────────────────────┐
-                │      FastAPI       │
-                │                    │
-                │     /predict       │
-                │     /health        │
-                └─────────┬──────────┘
-                          │
-                          ▼
-                ┌────────────────────┐
-                │    Inference       │
-                │     Pipeline       │
-                └─────────┬──────────┘
-                          │
-                          ▼
-                ┌────────────────────┐
-                │   G Face → Anime   │
-                │                    │
-                │   ResNet Generator │
-                └─────────┬──────────┘
-                          │
-                          ▼
-                ┌────────────────────┐
-                │    PyTorch CUDA    │
-                │                    │
-                │    NVIDIA GPU      │
-                └─────────┬──────────┘
-                          │
-                          ▼
-                    Anime Image
-```
-
----
-
-# 🧠 Model
-
-## 🤖 Pre-trained Model
-
-The trained model checkpoint is hosted on Hugging Face and is not included directly in this GitHub repository.
-
-### 📥 Download
-
-Download the pre-trained model:
-
-👉 [**Download `best_model.pth`**](https://huggingface.co/dileepkumar5175/face_to_anime/resolve/main/best_model.pth)
-
-After downloading, place the file inside the `checkpoints/` directory:
-
-```text
-Face-Anime-AI/
-├── checkpoints/
-│   └── best_model.pth
-├── src/
-├── app.py
-├── requirements.txt
-└── README.md
-```
-
-The `checkpoints/` directory is excluded from GitHub using `.gitignore` because model checkpoints are not stored in the source repository.
-
-
-## CycleGAN
-
-The project uses **CycleGAN**, which allows image-to-image translation without requiring paired examples.
-
-Instead of requiring:
-
-```text
-Real Face A  ↔  Anime Face A
-Real Face B  ↔  Anime Face B
-Real Face C  ↔  Anime Face C
-```
-
-the model can learn from separate domains:
-
-```text
-REAL DOMAIN                  ANIME DOMAIN
-
-Face 1                       Anime 1
-Face 2                       Anime 2
-Face 3                       Anime 3
-Face 4                       Anime 4
-  ...                           ...
-```
-
----
-
-## 🔄 Two Generators
-
-### Generator A
-
-```text
-G_face2anime
-
-Real Face
-    ↓
-Anime Image
-```
-
-### Generator B
-
-```text
-G_anime2face
-
-Anime Image
-    ↓
-Real-style Face
-```
-
----
-
-## 👁️ Two Discriminators
-
-```text
+``` text
 D_face
+Real Face / Generated Face
+          ↓
+     Local patches
+          ↓
+   Real / Fake scores
 
-Real Face ──────────┐
-                    ├──► Real / Fake
-Generated Face ─────┘
-```
 
-```text
 D_anime
-
-Real Anime ─────────┐
-                    ├──► Real / Fake
-Generated Anime ────┘
+Real Anime / Generated Anime
+          ↓
+     Local patches
+          ↓
+   Real / Fake scores
 ```
 
-The discriminators use a **PatchGAN-style architecture** to evaluate local image regions.
+The discriminator implementation uses convolutional blocks with:
 
----
+-   64 base filters
+-   Instance normalization
+-   LeakyReLU
+-   Patch-based output
 
-# 🔁 Cycle Consistency
-
-The key idea behind CycleGAN is that translating an image to another domain and back should approximately reconstruct the original.
-
-```text
-                 G_face2anime
-Real Face ─────────────────────► Fake Anime
-    ▲                                  │
-    │                                  │
-    │                                  ▼
-    └──────────── G_anime2face ────────┘
-```
-
-Therefore:
-
-```text
-Real Face ≈ Reconstructed Face
-```
-
-And in the opposite direction:
-
-```text
-Anime → Real → Anime
-```
-
-should also preserve the original structure.
-
----
+------------------------------------------------------------------------
 
 # 📉 Loss Functions
 
-The generator is optimized using multiple objectives.
+The training objective combines adversarial, cycle-consistency, and
+identity terms.
 
-### Adversarial Loss
+### Adversarial loss
 
-Encourages generated images to look realistic to the discriminator.
+The implementation uses an **MSE-based GAN objective** (LSGAN-style).
 
-### Cycle Consistency Loss
+``` text
+Generated image
+      ↓
+Discriminator
+      ↓
+MSE against "real" target
+```
 
-Preserves the important structure of the input image.
+### Cycle-consistency loss
 
-```text
+The model is encouraged to reconstruct the original image after
+translating to the other domain and back:
+
+``` text
 L_cycle =
-    || G_B(G_A(x)) - x ||₁
-  + || G_A(G_B(y)) - y ||₁
+    || G_anime2face(G_face2anime(x)) - x ||₁
+  + || G_face2anime(G_anime2face(y)) - y ||₁
 ```
 
-### Identity Loss
+### Identity loss
 
-Encourages the generator to preserve images that are already in the target domain.
+Identity mapping is also evaluated:
 
-### Overall Generator Objective
+``` text
+G_anime2face(real face) ≈ real face
+G_face2anime(anime)     ≈ anime
+```
 
-```text
+### Overall generator objective
+
+The implementation combines:
+
+``` text
 L_G =
-    L_adversarial
-    + λ_cycle L_cycle
-    + λ_identity L_identity
+    L_adv(face → anime)
+  + L_adv(anime → face)
+  + λ_cycle L_cycle
+  + λ_identity L_identity
 ```
 
----
+Configured defaults in the implementation include:
 
-# 📊 Dataset Pipeline
-
-```text
-             RAW DATA
-                 │
-                 ▼
-          ┌─────────────┐
-          │     EDA     │
-          └──────┬──────┘
-                 │
-                 ▼
-       Data Cleaning / Split
-                 │
-                 ▼
-        Processed Dataset
-                 │
-                 ▼
-          JSON File Lists
-                 │
-                 ▼
-        PyTorch Dataset
-                 │
-                 ▼
-           DataLoader
-                 │
-                 ▼
-             CycleGAN
+``` text
+learning rate      = 2e-4
+Adam betas         = (0.5, 0.999)
+lambda_cycle       = 10.0
+lambda_identity    = 0.5
+image pool size    = 50
 ```
 
-Images are converted to RGB before entering the model.
+The implementation internally scales the identity coefficient by the
+cycle coefficient when constructing the final loss.
 
-### Training Transformations
+------------------------------------------------------------------------
 
-```text
-Resize
+# 🖼️ Image Pipeline
+
+Training uses a common model resolution of:
+
+``` text
+256 × 256
+```
+
+### Training
+
+``` text
+Input
   ↓
-Random Crop
+Resize to ~1.12 × target
   ↓
-Random Horizontal Flip
+Random crop → 256 × 256
+  ↓
+Random horizontal flip
   ↓
 ToTensor
   ↓
-Normalize [-1, 1]
+Normalize to [-1, 1]
+  ↓
+CycleGAN
 ```
 
-### Testing Transformations
+### Testing / inference
 
-Testing uses deterministic preprocessing to make checkpoint comparisons more consistent.
-
----
-
-# 📈 Results
-
-The model is currently being evaluated through:
-
-### Quantitative Evaluation
-
-- Generator losses
-- Discriminator losses
-- Cycle-consistency loss
-- Identity loss
-- Training stability
-
-### Qualitative Evaluation
-
-Fixed test images are passed through different checkpoints to compare:
-
-```text
+``` text
 Input
   ↓
-Epoch 1
+Resize → 256 × 256
   ↓
-Epoch 10
+ToTensor
   ↓
-Epoch 20
+Normalize to [-1, 1]
   ↓
-Epoch 50
+Generator
   ↓
-Final Model
+Denormalize
+  ↓
+Output image
 ```
 
-This makes it possible to observe improvements in:
+Images are converted to RGB when loaded.
 
-- Facial structure
-- Anime style
-- Sharpness
-- Color consistency
-- Detail preservation
-- Generalization
+------------------------------------------------------------------------
 
-> The model is still under active experimentation and improvement.
+# 💾 Checkpointing
 
----
+The project saves both epoch-specific checkpoints and a `best_model.pth`
+checkpoint.
 
-# 🗂️ Project Structure
+An epoch checkpoint contains:
 
-```text
-Face-Anime-AI/
-│
-├── data/
-│   ├── raw_data/
-│   └── processed/
-│
-├── checkpoints/
-│   └── best_model.pth
-│
-├── src/
-│   ├── api/
-│   │   └── app.py
-│   │
-│   ├── data/
-│   │   ├── dataset.py
-│   │   └── transforms.py
-│   │
-│   ├── models/
-│   │   ├── generator.py
-│   │   ├── discriminator.py
-│   │   └── cyclegan.py
-│   │
-│   ├── losses/
-│   │   └── losses.py
-│   │
-│   ├── inference.py
-│   └── trainer.py
-│
-├── frontend/
-│   ├── src/
-│   ├── Dockerfile
-│   └── package.json
-│
-├── Dockerfile
-├── docker-compose.yml
-├── requirements.txt
-├── .dockerignore
-└── README.md
+``` text
+epoch
+G_face2anime
+G_anime2face
+D_face
+D_anime
+optimizer_G
+optimizer_D_face
+optimizer_D_anime
+scheduler_G
+scheduler_D_face
+scheduler_D_anime
 ```
 
----
+The default checkpoint directory is:
+
+``` text
+checkpoints/
+```
+
+Model files are excluded from Git using `.gitignore`.
+
+The inference code specifically loads:
+
+``` text
+G_face2anime
+```
+
+from the checkpoint.
+
+------------------------------------------------------------------------
+
+# 📊 Results
+
+The ZIP used for this README contains the EDA notebook and its recorded
+dataset samples, but it **does not contain epoch-by-epoch generated
+result images, training curves, or Real-ESRGAN output files**.
+
+Therefore this README deliberately does **not** invent epoch numbers,
+generated-output filenames, visual quality claims, or super-resolution
+comparisons that are not present in the supplied project snapshot.
+
+For the same reason, the repository should only add an epoch-progression
+gallery after the corresponding files are actually committed, for
+example:
+
+``` text
+Input → checkpoint → generated output
+```
+
+That keeps the README reproducible and evidence-based.
+
+------------------------------------------------------------------------
+
+# 🌐 Application
+
+The project includes a FastAPI inference service and a React frontend.
+
+## Backend
+
+The FastAPI application exposes:
+
+``` text
+GET  /health
+POST /predict
+```
+
+### `/health`
+
+Reports:
+
+-   API status
+-   selected device
+-   checkpoint path
+-   whether the generator is loaded
+
+### `/predict`
+
+Accepts:
+
+``` text
+JPEG
+PNG
+WEBP
+```
+
+The request is processed as:
+
+``` text
+Uploaded image
+      ↓
+PIL RGB conversion
+      ↓
+CycleGAN generator
+      ↓
+Denormalization
+      ↓
+JPEG response
+```
+
+If the checkpoint is missing, the backend can download it from the
+configured Hugging Face model URL before loading the generator.
+
+------------------------------------------------------------------------
+
+# 🎨 React Frontend
+
+The frontend is implemented with:
+
+-   React
+-   Vite
+-   CSS
+-   Fetch API
+
+The UI provides:
+
+``` text
+┌────────────────────┐
+│     ORIGINAL       │
+│                    │
+│   Upload face      │
+│                    │
+└─────────┬──────────┘
+          │
+     TRANSFORM
+          │
+          ▼
+┌────────────────────┐
+│    TRANSFORMED     │
+│                    │
+│   Anime result     │
+│                    │
+└────────────────────┘
+```
+
+The interface supports:
+
+-   Image selection
+-   Image preview
+-   Transformation request
+-   Loading state
+-   Error display
+-   Generated-image preview
+-   Result download
+-   Image swapping
+
+------------------------------------------------------------------------
+
+# 🐳 Docker
+
+The project contains separate containers for the backend and frontend.
+
+``` text
+                 Docker Compose
+                       │
+          ┌────────────┴────────────┐
+          │                         │
+          ▼                         ▼
+   FastAPI backend             React frontend
+      port 8000                   port 5173
+          │
+          ▼
+   PyTorch / CUDA image
+          │
+          ▼
+   /app/checkpoints/
+```
+
+### Backend image
+
+The backend Dockerfile is based on:
+
+``` text
+pytorch/pytorch:2.7.1-cuda12.6-cudnn9-runtime
+```
+
+### Frontend image
+
+The frontend uses:
+
+``` text
+node:22-alpine
+```
+
+for the build stage and:
+
+``` text
+nginx:alpine
+```
+
+for serving the production frontend.
+
+### Important GPU note
+
+The backend image is CUDA-capable, but the supplied `docker-compose.yml`
+currently has the GPU reservation commented out:
+
+``` yaml
+# gpus: all
+```
+
+So GPU access through Docker Compose must be explicitly enabled in the
+deployment configuration and requires a working NVIDIA Container Toolkit
+/ Docker GPU setup.
+
+------------------------------------------------------------------------
 
 # ⚙️ Installation
 
 ## Requirements
 
-Recommended environment:
+The repository is built around:
 
-- Python 3.12
-- PyTorch
-- CUDA-capable NVIDIA GPU for accelerated inference/training
-- Node.js
-- Docker Desktop
+-   Python 3.12+
+-   PyTorch
+-   Torchvision
+-   Pillow
+-   scikit-learn
+-   FastAPI
+-   Uvicorn
+-   python-multipart
+-   Node.js 22 for the supplied frontend container
+-   Docker Desktop / Docker Engine
+-   NVIDIA GPU + CUDA support for accelerated training/inference
 
----
+## Clone
 
-## 1. Clone
-
-```bash
+``` bash
 git clone https://github.com/dileepkumar2626/Face-Anime-AI.git
-
 cd Face-Anime-AI
 ```
 
----
+## Python environment
 
-## 2. Python Environment
-
-```bash
+``` bash
 python -m venv .venv
 ```
 
 ### Windows
 
-```bash
+``` bash
 .venv\Scripts\activate
 ```
 
 ### Linux / macOS
 
-```bash
+``` bash
 source .venv/bin/activate
 ```
 
----
+Install dependencies:
 
-## 3. Install Python Dependencies
-
-```bash
+``` bash
 pip install -r requirements.txt
 ```
 
----
+------------------------------------------------------------------------
 
-# 🧪 Training
+# 🏋️ Training
 
-Training can be started through the training pipeline:
+The main training entry point is:
 
-```bash
-python src/trainer.py
+``` text
+src/trainer.py
 ```
 
-Example configuration:
+The trainer supports configuration for:
 
-```python
+``` text
+num_epochs
+learning rate
+cycle loss weight
+identity loss weight
+checkpoint directory
+logging interval
+learning-rate decay epoch
+device
+```
+
+Example:
+
+``` python
+from src.trainer import train
+
 train(
     num_epochs=200,
-    batch_size=1,
     lr=2e-4,
     lambda_cycle=10.0,
-    lambda_identity=0.5
+    lambda_identity=0.5,
+    checkpoint_dir="checkpoints",
+    decay_epoch=100,
 )
 ```
 
-The training process supports:
+The implementation supports CUDA automatically when available:
 
-- Epoch-based training
-- Loss logging
-- Model checkpointing
-- Generator/discriminator optimization
-- GPU acceleration when CUDA is available
-
----
-
-# 💾 Checkpoints
-
-Checkpoints contain the learned parameters for:
-
-```text
-G_face2anime
-G_anime2face
-D_face
-D_anime
+``` python
+device = "cuda" if torch.cuda.is_available() else "cpu"
 ```
 
-and optimizer states.
+The learning-rate scheduler is designed for a constant-learning-rate
+phase followed by linear decay.
 
-This allows trained models to be loaded later for inference or continued training.
+------------------------------------------------------------------------
 
----
+# 🔎 Command-Line Inference
 
-# 🖼️ Inference
+The inference entry point is:
 
-Generate an anime image from a face image:
-
-```bash
-python src/inference.py \
-    --checkpoint checkpoints/best_model.pth \
-    --input path/to/face.jpg \
-    --output anime_result.jpg
+``` text
+src/inference.py
 ```
 
-Inference pipeline:
+Run:
 
-```text
-Input Image
-     ↓
-RGB Conversion
-     ↓
-Resize
-     ↓
-Normalize
-     ↓
-Generator
-     ↓
-Denormalize
-     ↓
-Output Image
+``` bash
+python -m src.inference \
+  --checkpoint checkpoints/best_model.pth \
+  --input path/to/face.jpg \
+  --output anime_result.jpg
 ```
 
----
+The inference pipeline loads only the `G_face2anime` generator from the
+checkpoint.
 
-# 🌐 FastAPI
+------------------------------------------------------------------------
 
-The trained model is exposed through a REST API.
+# 🚀 Run the API
 
-Run locally:
+From the repository root:
 
-```bash
+``` bash
 uvicorn src.api.app:app --host 0.0.0.0 --port 8000
 ```
 
-### API
+API:
 
-| Endpoint | Method | Purpose |
-|---|---|---|
-| `/health` | GET | Check API/model status |
-| `/predict` | POST | Generate anime image |
-| `/docs` | GET | Interactive API documentation |
+``` text
+http://localhost:8000
+```
 
-Open:
+Swagger UI:
 
-```text
+``` text
 http://localhost:8000/docs
 ```
 
----
+Health check:
 
-# 💻 React Frontend
-
-The frontend provides a simple interface for:
-
-```text
-Upload Image
-      ↓
-Preview
-      ↓
-Transform
-      ↓
-FastAPI
-      ↓
-Anime Result
-      ↓
-Download
+``` text
+http://localhost:8000/health
 ```
 
-Run locally:
+------------------------------------------------------------------------
 
-```bash
+# 💻 Run the Frontend
+
+``` bash
 cd frontend
 npm install
 npm run dev
 ```
 
-The frontend communicates with:
+The Vite development server uses the frontend environment variable:
 
-```text
-POST /predict
+``` text
+VITE_API_URL
 ```
 
----
+Example:
 
-# 🐳 Docker
-
-The project is fully containerized.
-
-### Backend
-
-```text
-FastAPI
-+
-PyTorch
-+
-CUDA
-+
-CycleGAN
+``` bash
+VITE_API_URL=http://localhost:8000 npm run dev
 ```
 
-### Frontend
+On Windows PowerShell:
 
-```text
-React
-+
-Nginx
+``` powershell
+$env:VITE_API_URL="http://localhost:8000"
+npm run dev
 ```
 
----
+------------------------------------------------------------------------
 
-## Build Backend
+# 🐳 Run with Docker Compose
 
-From the project root:
+Build and start:
 
-```bash
-docker build -t face-anime-api:gpu .
+``` bash
+docker compose up --build
 ```
 
----
+The supplied compose configuration exposes:
 
-## Build Frontend
-
-```bash
-cd frontend
-
-docker build -t face-anime-frontend:latest .
+``` text
+Frontend  → http://localhost:5173
+Backend   → http://localhost:8000
 ```
 
----
+The checkpoint volume is:
 
-## Run Everything
-
-From the project root:
-
-```bash
-docker compose up
+``` text
+model_cache:/app/checkpoints
 ```
 
-Frontend:
+and the backend expects:
 
-```text
-http://localhost:5173
+``` text
+/app/checkpoints/best_model.pth
 ```
 
-Backend:
+------------------------------------------------------------------------
 
-```text
-http://localhost:8000
+# 📁 Project Structure
+
+``` text
+Face-Anime-AI/
+│
+├── data/
+│   └── processed/
+│       ├── anime_train/
+│       │   └── anime_train.json
+│       ├── anime_test/
+│       │   └── anime_test.json
+│       ├── real_train/
+│       │   └── real_train.json
+│       └── real_test/
+│           └── real_test.json
+│
+├── frontend/
+│   ├── public/
+│   │   ├── favicon.svg
+│   │   └── icons.svg
+│   ├── src/
+│   │   ├── App.jsx
+│   │   ├── index.css
+│   │   └── main.jsx
+│   ├── Dockerfile
+│   ├── index.html
+│   ├── package.json
+│   ├── package-lock.json
+│   └── vite.config.js
+│
+├── notebooks/
+│   └── 01_EDA.ipynb
+│
+├── src/
+│   ├── api/
+│   │   ├── app.py
+│   │   └── init.py
+│   │
+│   ├── data/
+│   │   ├── dataloader.py
+│   │   ├── dataset.py
+│   │   ├── preprocessing.py
+│   │   ├── test_dataset.ipynb
+│   │   └── transforms.py
+│   │
+│   ├── models/
+│   │   ├── cyclegan.py
+│   │   ├── discriminator.py
+│   │   ├── generator.py
+│   │   └── losses.py
+│   │
+│   ├── utils/
+│   │   ├── checkpoint.py
+│   │   └── image_pool.py
+│   │
+│   ├── inference.py
+│   └── trainer.py
+│
+├── awesome-project/
+│   ├── pyproject.toml
+│   └── uv.lock
+│
+├── Dockerfile
+├── docker-compose.yml
+├── requirements.txt
+├── .dockerignore
+├── .gitignore
+└── README.md
 ```
 
-FastAPI documentation:
+------------------------------------------------------------------------
 
-```text
-http://localhost:8000/docs
-```
+# 🔬 Engineering & Research Aspects
 
----
+This project is more than a single pretrained-model demo. It covers
+several stages of an ML research workflow:
 
-# ⚡ GPU Acceleration
+### Data
 
-The application automatically selects CUDA when available:
+-   Dataset validation
+-   Corrupt-image checking
+-   Resolution analysis
+-   Color-mode analysis
+-   Duplicate detection
+-   Reproducible train/test split
+-   JSON-based dataset indexing
 
-```python
-device = "cuda" if torch.cuda.is_available() else "cpu"
-```
+### Modeling
 
-Docker is configured to expose the NVIDIA GPU to the backend container.
+-   Custom ResNet generator implementation
+-   Custom PatchGAN discriminator
+-   Cycle-consistency objective
+-   Identity regularization
+-   Image replay pools
+-   Learning-rate scheduling
 
-The current development environment has been tested with an NVIDIA RTX 4060.
+### Experimentation
 
-```text
-Docker
-   ↓
-NVIDIA Container Runtime
-   ↓
-CUDA
-   ↓
-PyTorch
-   ↓
-RTX 4060
-   ↓
-CycleGAN
-```
+-   Training-loss logging
+-   Epoch checkpoints
+-   Fixed test preprocessing
+-   Qualitative model evaluation workflow
 
----
+### Deployment
 
-# 🌍 Deployment
+-   Standalone inference
+-   REST API
+-   Browser frontend
+-   Docker containers
+-   CUDA-capable backend image
 
-The application is currently **containerized and GPU-ready for local deployment**.
+------------------------------------------------------------------------
 
-The next deployment stage is to move the Dockerized application to a cloud GPU server:
+# ⚠️ Current Limitations
 
-```text
-Local Machine
-     │
-     ▼
-Docker Image
-     │
-     ▼
-Cloud GPU Server
-     │
-     ▼
-Docker Compose
-     │
-     ▼
-FastAPI + CycleGAN
-     │
-     ▼
-Public API
-     │
-     ▼
-React Frontend
-     │
-     ▼
-🌍 Public Application
-```
+The current implementation has several practical limitations:
 
----
+1.  **Training resolution is 256 × 256**, so fine facial details can be
+    lost.
+2.  **The real dataset starts at 178 × 218**, meaning training
+    resolution requires upscaling.
+3.  **CycleGAN is unpaired**, so exact identity preservation is not
+    guaranteed.
+4.  GAN losses alone are not sufficient to judge visual quality.
+5.  The repository snapshot does not include epoch-by-epoch generated
+    samples or quantitative image-quality metrics.
+6.  The supplied Docker Compose file does not currently enable GPU
+    reservation because `gpus: all` is commented out.
+7.  The checkpoint is intentionally excluded from Git and handled
+    separately.
+8.  The inference pipeline currently returns a JPEG generated at the
+    model's working resolution; a separate super-resolution stage is not
+    included in the supplied source tree.
 
-# 🔬 Future Work
+------------------------------------------------------------------------
 
-### Model
+# 🛣️ Future Work
 
-- [ ] Improve dataset quality
-- [ ] Increase dataset diversity
-- [ ] Experiment with larger datasets
-- [ ] Learning-rate scheduling
-- [ ] Fake-image replay buffer
-- [ ] Improve training stability
-- [ ] Higher-resolution generation
-- [ ] Super-resolution refinement
+Possible next experiments include:
 
-### Evaluation
+-   Train for longer and compare fixed checkpoints
+-   Add an automated validation/evaluation pipeline
+-   Save generated samples at every selected epoch
+-   Add training curves for generator/discriminator/cycle/identity
+    losses
+-   Experiment with batch size and augmentation policies
+-   Improve face alignment/cropping
+-   Experiment with perceptual or feature-based losses
+-   Add a dedicated super-resolution stage after translation
+-   Compare different anime-domain models
+-   Add experiment tracking
+-   Add automated API tests
+-   Enable GPU reservations in Docker Compose for NVIDIA deployments
+-   Add CI/CD for the frontend and backend
 
-- [ ] Automated image-quality metrics
-- [ ] More systematic benchmark dataset
-- [ ] Compare multiple checkpoints
-- [ ] Compare baseline vs improved model
-- [ ] Evaluate generalization on unseen faces
+------------------------------------------------------------------------
 
-### Application
+# 📚 References
 
-- [ ] Public cloud deployment
-- [ ] Production monitoring
-- [ ] API rate limiting
-- [ ] Improved inference performance
-- [ ] User authentication
-- [ ] Production domain
+### CycleGAN
 
-### Research
+Zhu, J.-Y., Park, T., Isola, P., & Efros, A. A.\
+**Unpaired Image-to-Image Translation using Cycle-Consistent Adversarial
+Networks.**
 
-- [ ] Compare CycleGAN with modern diffusion-based approaches
-- [ ] Investigate perceptual losses
-- [ ] Experiment with modern image-to-image architectures
+https://arxiv.org/abs/1703.10593
 
----
+### Official CycleGAN implementation
 
-# 🎯 Why This Project?
+https://github.com/junyanz/pytorch-CycleGAN-and-pix2pix
 
-The goal of this project is not only to train an image translation model.
+### Real-ESRGAN
 
-It explores the **complete lifecycle of a deep-learning application**:
+Wang et al.\
+**Real-ESRGAN: Training Real-World Blind Super-Resolution with Pure
+Synthetic Data.**
 
-```text
-                 ┌─────────────┐
-                 │   Research  │
-                 └──────┬──────┘
-                        ↓
-                 ┌─────────────┐
-                 │   Dataset   │
-                 └──────┬──────┘
-                        ↓
-                 ┌─────────────┐
-                 │     EDA     │
-                 └──────┬──────┘
-                        ↓
-                 ┌─────────────┐
-                 │Preprocessing│
-                 └──────┬──────┘
-                        ↓
-                 ┌─────────────┐
-                 │    Model    │
-                 └──────┬──────┘
-                        ↓
-                 ┌─────────────┐
-                 │   Training  │
-                 └──────┬──────┘
-                        ↓
-                 ┌─────────────┐
-                 │  Evaluation │
-                 └──────┬──────┘
-                        ↓
-                 ┌─────────────┐
-                 │  Inference  │
-                 └──────┬──────┘
-                        ↓
-                 ┌─────────────┐
-                 │   FastAPI   │
-                 └──────┬──────┘
-                        ↓
-                 ┌─────────────┐
-                 │    React    │
-                 └──────┬──────┘
-                        ↓
-                 ┌─────────────┐
-                 │   Docker    │
-                 └──────┬──────┘
-                        ↓
-                 ┌─────────────┐
-                 │ GPU Deploy  │
-                 └─────────────┘
-```
+https://github.com/xinntao/Real-ESRGAN
 
----
-
-# 🧰 Tech Stack
-
-| Layer | Technology |
-|---|---|
-| Language | Python |
-| Deep Learning | PyTorch |
-| Computer Vision | Pillow / Torchvision |
-| Architecture | CycleGAN |
-| Generator | ResNet |
-| Discriminator | PatchGAN |
-| Adversarial Objective | LSGAN |
-| Cycle Loss | L1 Cycle Consistency |
-| Identity Loss | L1 Identity Loss |
-| API | FastAPI |
-| Frontend | React |
-| Web Server | Nginx |
-| Containerization | Docker |
-| Orchestration | Docker Compose |
-| GPU Acceleration | NVIDIA CUDA |
-| Version Control | Git / GitHub |
-
----
+------------------------------------------------------------------------
 
 # 👨‍💻 Author
 
-## Dileep Kumar
+**Dileep Kumar**
 
-**AI/ML Engineer · Deep Learning · Machine Learning Research**
+AI/ML Engineer • Deep Learning • Computer Vision • ML Research
 
-I build machine-learning and deep-learning systems and enjoy turning research ideas into working implementations.
-
-<p align="left">
-  <a href="https://github.com/dileepkumar2626">
-    <img src="https://img.shields.io/badge/GitHub-Dileep%20Kumar-181717?style=for-the-badge&logo=github&logoColor=white" />
-  </a>
-
-  <a href="https://www.linkedin.com/in/dileep-kumarbh/">
-    <img src="https://img.shields.io/badge/LinkedIn-Dileep%20Kumar-0A66C2?style=for-the-badge&logo=linkedin&logoColor=white" />
-  </a>
+```{=html}
+<p>
+```
+`<a href="https://github.com/dileepkumar2626">`{=html} GitHub
+`</a>`{=html}  • 
+`<a href="https://www.linkedin.com/in/dileep-kumarbh/">`{=html} LinkedIn
+`</a>`{=html}
+```{=html}
 </p>
+```
 
----
+------------------------------------------------------------------------
 
-# 📚 Research
+## ⭐ Project Summary
 
-This project is based on the CycleGAN research:
+``` text
+Real Faces
+    │
+    ▼
+Data Validation + EDA
+    │
+    ▼
+Unpaired Dataset
+    │
+    ▼
+Custom PyTorch CycleGAN
+    │
+    ├── G_face2anime
+    ├── G_anime2face
+    ├── D_face
+    └── D_anime
+    │
+    ▼
+256 × 256 Anime Translation
+    │
+    ▼
+PyTorch Inference
+    │
+    ▼
+FastAPI
+    │
+    ▼
+React
+    │
+    ▼
+Docker / CUDA-ready deployment
+```
 
-**Unpaired Image-to-Image Translation using Cycle-Consistent Adversarial Networks**
-
-The implementation uses PyTorch to build the training and inference pipeline.
-
----
-
-# 📄 License
-
-This project is intended for educational, research, and portfolio purposes.
+**Face → Anime AI** demonstrates an end-to-end approach to building,
+evaluating, and serving a custom generative computer-vision system.
