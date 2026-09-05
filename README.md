@@ -448,27 +448,6 @@ testing were done on an NVIDIA RTX 4060.
 
 ---
 
-## 🔬 Future Work
-
-### Model & Training
-- [ ] Larger, more diverse, and better-balanced dataset
-- [ ] Higher-resolution generation beyond 256×256
-- [ ] Super-resolution refinement pass on outputs
-- [ ] Perceptual (VGG-based) loss for sharper detail
-
-### Evaluation
-- [ ] Automated image-quality metrics (FID/KID)
-- [ ] A fixed benchmark set for checkpoint-to-checkpoint comparison
-- [ ] Systematic evaluation of generalization on unseen faces
-
-### Application
-- [ ] Public cloud GPU deployment
-- [ ] Production monitoring and API rate limiting
-- [ ] Fix the default `CHECKPOINT_PATH` / checkpoint-filename mismatch between training output and API expectations
-- [ ] Remove the now-unused `torch.hub` AnimeGANv2 download step from `Dockerfile` (superseded by the `anime2_v2.pth` Hugging Face checkpoint)
-- [ ] Replace the placeholder CORS origin in `src/api/app.py` with the real deployment domain
-- [ ] User authentication
-
 ---
 
 ## 🧰 Tech Stack
