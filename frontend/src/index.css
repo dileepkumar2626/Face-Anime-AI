@@ -389,3 +389,41 @@ label:focus-within {
   outline: 3px solid var(--crimson);
   outline-offset: 2px;
 }
+.model-selector {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 20px;
+}
+
+.model-selector label {
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  font-weight: 700;
+}
+
+.model-selector select {
+  width: 100%;
+  min-width: 180px;
+  padding: 10px 12px;
+  border: 1px solid currentColor;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+  outline: none;
+}
+
+.model-selector select:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.model-description {
+  display: block;
+  font-size: 0.68rem;
+  line-height: 1.4;
+  opacity: 0.65;
+  max-width: 220px;
+}

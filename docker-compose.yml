@@ -9,16 +9,17 @@ services:
     ports:
       - "8000:8000"
     environment:
-      CHECKPOINT_PATH: /app/checkpoints/best_model.pth
+      CHECKPOINT_DIR: /app/checkpoints
     volumes:
       - model_cache:/app/checkpoints
     # gpus: all
     restart: unless-stopped
-
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_URL: http://localhost:8000
     image: face-anime-frontend:latest
     container_name: face-anime-frontend
     ports:
