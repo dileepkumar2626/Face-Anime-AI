@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import "./index.css";
 
 const API_BASE_URL =
-  import.meta.env.VITE_API_URL || "http://localhost:8000";
+  import.meta.env.VITE_API_URL || `${window.location.protocol}//${window.location.hostname}:8000`;
 
 const MODELS_URL = `${API_BASE_URL}/models`;
 const PREDICT_URL = `${API_BASE_URL}/predict`;
